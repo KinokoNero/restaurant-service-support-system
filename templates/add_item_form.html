@@ -1,0 +1,15 @@
+<form method="POST" action="{{ url_for('add_item_route') }}" enctype="multipart/form-data">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required><br>
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" rows="4" required></textarea><br>
+
+    <label for="price">Price:</label>
+    <input type="number" id="price" name="price" step="0.01" required><br>
+
+    <label for="image">Image:</label>
+    <input type="file" id="image" name="image" accept="image/*" required><br>
+
+    <input type="submit" value="Add Item">
+</form>

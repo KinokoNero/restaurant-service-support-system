@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Menu</title>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </head>
+    <body>
+        <div id="admin-panel">
+            {% if current_user and current_user.role == "Admin" %}
+                <button id="logout-button">Logout</button>
+                <button id="add-item-button">Add Item</button>
+            {% endif %}
+        </div>
+
+        <ul>
+            {% for item in items %}
+                <li>
+                    <h2>{{ item.name }}</h2>
+                    <p>{{ item.description }}</p>
+                    <p>Cena: {{ item.price }} zł</p>
+                    <img src="{{ item.image }}">
+                </li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

@@ -1,6 +1,8 @@
-from flask import Blueprint, request, render_template, redirect, url_for, session, flash
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
+from functools import wraps
+from flask import Blueprint, request, render_template, redirect, url_for, session, flash, abort
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user#, current_user
 from pymongo import MongoClient
+from bson import ObjectId
 
 # Admin routes blueprint
 auth_routes = Blueprint('auth_routes', __name__, template_folder='templates')
@@ -22,7 +24,7 @@ login_manager.login_view = 'auth_routes.admin_login'
 
 @login_manager.user_loader
 def load_user(user_id):
-    user_data = users.find_one({'_id': user_id})
+    user_data = users.find_one({'_id': ObjectId(user_id)})
     if user_data:
         return User(user_data['_id'], user_data['username'], user_data['role'])
 
@@ -41,11 +43,23 @@ def admin_login():
         else:
             flash('Login failed. Please check your credentials.', 'danger')
 
-    return render_template('admin-login.html')
+    return render_template('admin_login.html')
 
 @auth_routes.route('/logout')
 @login_required
 def admin_logout():
     logout_user()
     flash('Admin logged out successfully!', 'success')
-    return redirect(url_for('main-page'))
+    return redirect(url_for('main_page'))
+
+def role_required(required_role):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated:
+                return current_app.login_manager.unauthorized()
+            if current_user.role != required_role:
+                abort(403)  # Forbidden
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
