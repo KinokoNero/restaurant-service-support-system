@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import Blueprint, request, render_template, redirect, url_for, session, flash, abort
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user#, current_user
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from pymongo import MongoClient
 from bson import ObjectId
 
@@ -20,7 +20,7 @@ class User(UserMixin):
 
 # Initialize Flask-Login
 login_manager = LoginManager()
-login_manager.login_view = 'auth_routes.admin_login'
+login_manager.login_view = 'auth_routes.login'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -30,7 +30,7 @@ def load_user(user_id):
 
 # Define routes
 @auth_routes.route('/login', methods=['GET', 'POST'])
-def admin_login():
+def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -38,18 +38,18 @@ def admin_login():
         if user_data:
             user = User(user_data['_id'], user_data['username'], user_data['role'])
             login_user(user)
-            flash('Admin logged in successfully!', 'success')
+            flash('User logged in successfully!', 'success')
             return redirect(url_for('main_page'))
         else:
             flash('Login failed. Please check your credentials.', 'danger')
 
     return render_template('admin_login.html')
 
-@auth_routes.route('/logout')
+@auth_routes.route('/logout', methods=['POST'])
 @login_required
-def admin_logout():
+def logout():
     logout_user()
-    flash('Admin logged out successfully!', 'success')
+    flash('User logged out successfully!', 'success')
     return redirect(url_for('main_page'))
 
 def role_required(required_role):

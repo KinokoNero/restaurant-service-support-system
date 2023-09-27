@@ -8,7 +8,9 @@
     <body>
         <div id="admin-panel">
             {% if current_user and current_user.role == "Admin" %}
-                <button id="logout-button">Logout</button>
+                <form method="POST" action="{{ url_for('auth_routes.logout') }}">
+                    <input type="submit" value="Logout">
+                </form>
                 <button id="add-item-button">Add Item</button>
             {% endif %}
         </div>
@@ -19,7 +21,10 @@
                     <h2>{{ item.name }}</h2>
                     <p>{{ item.description }}</p>
                     <p>Cena: {{ item.price }} zł</p>
-                    <img src="{{ item.image }}">
+                    <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
+                    <form method="POST" action="{{ url_for('db_routes.delete_item', item_id=item._id) }}">
+                        <input class="delete-button" type="submit" value="Delete">
+                    </form>
                 </li>
             {% endfor %}
         </ul>
