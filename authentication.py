@@ -28,9 +28,8 @@ def load_user(user_id):
     if user_data:
         return User(user_data['_id'], user_data['username'], user_data['role'])
 
-# Define routes
-@auth_routes.route('/login', methods=['GET', 'POST'])
-def login():
+@auth_routes.route('/login/admin', methods=['GET', 'POST'])
+def admin_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -42,8 +41,23 @@ def login():
             return redirect(url_for('main_page'))
         else:
             flash('Login failed. Please check your credentials.', 'danger')
+    else:
+        return render_template('admin_login.html')
 
-    return render_template('admin_login.html')
+@auth_routes.route('/login/qr', methods=['POST'])
+def qr_login(): #TODO : finish this
+    table_id = request.form[]
+    user_data = users.find_one({'_id': table_id})
+
+    if user_data:
+        user = User(user_data['_id'], user_data['username'], user_data['role'])
+        login_user(user)
+        flash('User logged in successfully using QR code!', 'success')
+        return redirect(url_for('main_page'))
+    else:
+        flash('QR code login failed. User not found.', 'danger')
+
+    return redirect(url_for('main_page'))
 
 @auth_routes.route('/logout', methods=['POST'])
 @login_required

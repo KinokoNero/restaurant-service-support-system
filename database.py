@@ -2,8 +2,10 @@ from flask import Blueprint, request, render_template, flash, redirect, url_for,
 from pymongo import MongoClient
 from flask_login import login_required, current_user
 from authentication import role_required
+from qr import qr_codes_directory, generate_qr_code
 from gridfs import GridFS
 from bson import ObjectId
+import os
 
 db_routes = Blueprint('db_routes', __name__, template_folder='templates')
 
@@ -12,9 +14,15 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["r3s"]
 users_collection = db["users"]
 menu_collection = db["menu"]
-#tables_collection = db["tables"]
 orders_collection = db["orders"]
 fs = GridFS(db) # For storing images
+
+@db_routes.route('/get-image/<image_id>')
+def get_image(image_id):
+    image = fs.get(ObjectId(image_id))
+    response = make_response(image.read())
+    response.headers['Content-Type'] = 'image/jpeg'
+    return response
 
 @db_routes.route('/add-item', methods=['GET', 'POST'])
 @login_required
@@ -66,14 +74,6 @@ def delete_item(item_id):
 
     return redirect(url_for('main_page'))
 
-
-@db_routes.route('/get-image/<image_id>')
-def get_image(image_id):
-    image = fs.get(ObjectId(image_id))
-    response = make_response(image.read())
-    response.headers['Content-Type'] = 'image/jpeg'
-    return response
-
 ### Tables ###
 @db_routes.route('/table-manager', methods=['GET'])
 @login_required
@@ -88,18 +88,23 @@ def table_manager():
 def add_table():
     if request.method == 'POST':
         name = request.form['name']
-        password = request.form['password']
         role = 'User'
 
         table_document = {
             'name': name,
-            'password': password,
             'role': role
         }
 
         result = users_collection.insert_one(table_document)
 
         if result.acknowledged:
+            inserted_id = result.inserted_id
+            qr_code_image = generate_qr_code(inserted_id)
+            qr_code_image_id = fs.put(qr_code_image, filename=inserted_id)
+            users_collection.update_one(
+                {'_id': inserted_id},
+                {'$set': {'qr_code_image_id': qr_code_image_id}}
+            )
             flash('Table added successfully!', 'success')
         else:
             flash('Failed to add table.', 'danger')
@@ -116,9 +121,14 @@ def delete_table(table_id):
     table = users_collection.find_one({'_id': table_id})
 
     if table:
+        qr_code_image_id = table.get('qr_code_image_id')
         result = users_collection.delete_one({'_id': table_id})
 
         if result.deleted_count > 0:
+            fs.delete(qr_code_image_id)
+            file_path = f"{qr_codes_directory}/{table_id}.png"
+            if os.path.exists(file_path):
+                os.remove(file_path)
             flash('Table deleted successfully!', 'success')
         else:
             flash('Table could not be deleted.', 'danger')
