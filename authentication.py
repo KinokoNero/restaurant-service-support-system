@@ -1,8 +1,8 @@
-from functools import wraps
-from flask import Blueprint, request, render_template, redirect, url_for, session, flash, abort
+from flask import Blueprint, request, render_template, redirect, url_for, flash, abort#, session
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from pymongo import MongoClient
 from bson import ObjectId
+from functools import wraps
 
 # Admin routes blueprint
 auth_routes = Blueprint('auth_routes', __name__, template_folder='templates')

@@ -1,8 +1,24 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const addItemButton = document.getElementById('add-item-button');    
-    addItemButton.addEventListener('click', function() {
-        window.location.href = 'admin/database/add-item';
-    });
+    const addItemButton = document.getElementById('add-item-button');
+    if(addItemButton != null) {
+        addItemButton.addEventListener('click', function() {
+            window.location.href = '/db/add-item';
+        });
+    }
+
+    const tableManagerButton = document.getElementById('table-manager-button');
+    if(tableManagerButton != null) {
+        tableManagerButton.addEventListener('click', function() {
+            window.location.href = '/db/table-manager';
+        });
+    }
+
+    const addTableButton = document.getElementById('add-table-button');
+    if(addTableButton != null) {
+        addTableButton.addEventListener('click', function() {
+            window.location.href = '/db/add-table';
+        });
+    }
 
     const deleteButtons = document.querySelectorAll('.delete-button');
     deleteButtons.forEach(button => {

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Table Manager</title>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </head>
+    <body>
+        <div id="admin-panel">
+            <button id="add-table-button">Add table</button>
+        </div>
+
+        <ul>
+            {% for table in tables %}
+                <li>
+                    <h2>{{ table.name }}</h2>
+                    <p>{{ table._id }}</p>
+                    <form method="POST" action="{{ url_for('db_routes.delete_table', table_id=table._id) }}">
+                        <input class="delete-button" type="submit" value="Delete">
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

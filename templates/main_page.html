@@ -12,6 +12,7 @@
                     <input type="submit" value="Logout">
                 </form>
                 <button id="add-item-button">Add Item</button>
+                <button id="table-manager-button">Table Manager</button>
             {% endif %}
         </div>
 
@@ -22,9 +23,11 @@
                     <p>{{ item.description }}</p>
                     <p>Cena: {{ item.price }} zł</p>
                     <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
-                    <form method="POST" action="{{ url_for('db_routes.delete_item', item_id=item._id) }}">
-                        <input class="delete-button" type="submit" value="Delete">
-                    </form>
+                    {% if current_user and current_user.role == "Admin" %}
+                        <form method="POST" action="{{ url_for('db_routes.delete_item', item_id=item._id) }}">
+                            <input class="delete-button" type="submit" value="Delete">
+                        </form>
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>
