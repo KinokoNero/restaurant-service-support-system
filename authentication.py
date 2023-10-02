@@ -3,6 +3,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from pymongo import MongoClient
 from bson import ObjectId
 from functools import wraps
+from security import verify_password
 
 # Admin routes blueprint
 auth_routes = Blueprint('auth_routes', __name__, template_folder='templates')
@@ -33,8 +34,11 @@ def admin_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user_data = users.find_one({'username': username, 'password': password})
-        if user_data:
+
+        user_data = users.find_one({'username': username, 'role': "Admin"})
+        correct_password = verify_password(password, user_data.get("password"), user_data.get("salt"))
+        
+        if user_data and correct_password:
             user = User(user_data['_id'], user_data['username'], user_data['role'])
             login_user(user)
             flash('User logged in successfully!', 'success')

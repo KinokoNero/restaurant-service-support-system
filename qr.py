@@ -2,7 +2,7 @@ import qrcode
 import os
 from io import BytesIO
 
-qr_codes_directory = f"{os.path.dirname(__file__)}/qr-codes"
+qr_codes_directory = os.path.join(os.path.dirname(__file__), "qr-codes")
 
 def generate_qr_code(table_id):
     qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
