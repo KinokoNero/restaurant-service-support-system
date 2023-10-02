@@ -45,17 +45,17 @@ def admin_login():
         return render_template('admin_login.html')
 
 @auth_routes.route('/login/qr', methods=['POST'])
-def qr_login(): #TODO : finish this
-    table_id = request.form[]
+def qr_login():
+    table_id = request.form["table_id"]
     user_data = users.find_one({'_id': table_id})
 
     if user_data:
         user = User(user_data['_id'], user_data['username'], user_data['role'])
         login_user(user)
-        flash('User logged in successfully using QR code!', 'success')
+        flash('User logged in successfully!', 'success')
         return redirect(url_for('main_page'))
     else:
-        flash('QR code login failed. User not found.', 'danger')
+        flash('Login failed. User not found.', 'danger')
 
     return redirect(url_for('main_page'))
 

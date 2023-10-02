@@ -1,0 +1,17 @@
+<form method="POST" action="{{ url_for('db_routes.modify_item', item_id=item._id) }}" enctype="multipart/form-data">
+    <label for="name">Nazwa:</label>
+    <input type="text" id="name" name="name" value="{{ item.name }}" required><br>
+
+    <label for="description">Opis:</label>
+    <textarea id="description" name="description" rows="2" required>{{ item.description }}</textarea><br>
+
+    <label for="price">Cena:</label>
+    <input type="number" id="price" name="price" step="0.01" value="{{ item.price }}" required><br>
+    
+    <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
+
+    <label for="image">Zmień obraz:</label>
+    <input type="file" id="image" name="image" accept="image/*"><br>
+
+    <input type="submit" value="Zapisz">
+</form>

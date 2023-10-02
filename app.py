@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from database import db_routes, menu_collection
 from authentication import auth_routes, login_manager
-from flask_login import login_required#LoginManager, UserMixin, login_user, logout_user, current_user
+from flask_login import login_required
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'c9383efdbb41c23072b029ecc4789e36'

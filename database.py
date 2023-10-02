@@ -53,6 +53,38 @@ def add_item():
     else:
         return render_template('add_item_form.html')
 
+@db_routes.route('/modify-item/<item_id>', methods=['GET', 'POST'])
+@login_required
+@role_required('Admin')
+def modify_item(item_id):
+    item_data = menu_collection.find_one({'_id': ObjectId(item_id)})
+    
+    if request.method == 'POST':
+        name = request.form['name']
+        description = request.form['description']
+        price = float(request.form['price'])
+
+        menu_collection.update_one({'_id': ObjectId(item_id)}, {
+            '$set': {
+                'name': name,
+                'description': description,
+                'price': price
+            }
+        })
+
+        # Update image if selected in form
+        if 'image' in request.files:
+            image = request.files['image']
+            if image and image.filename != '':
+                old_image_id = ObjectId(item_data.get("image_id"))
+                fs.delete(old_image_id)
+                fs.put(image, filename=image.filename, _id=old_image_id)
+
+        flash('Item modified successfully!', 'success')
+        return redirect(url_for('main_page'))
+    
+    return render_template('modify_item_form.html', item=item_data)
+
 @db_routes.route('/delete-item/<item_id>', methods=['POST'])
 @login_required
 @role_required('Admin')

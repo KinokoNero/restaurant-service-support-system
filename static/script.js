@@ -6,6 +6,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const modifyItemButtons = document.querySelectorAll('.modify-item-button');
+    if(modifyItemButtons != null) {
+        modifyItemButtons.forEach(button => {
+            const itemId = button.getAttribute('item-id');
+            button.addEventListener('click', function() {
+                window.location.href = `/db/modify-item/${itemId}`;
+            });
+        });
+    }
+
     const tableManagerButton = document.getElementById('table-manager-button');
     if(tableManagerButton != null) {
         tableManagerButton.addEventListener('click', function() {
