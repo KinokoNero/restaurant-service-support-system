@@ -24,6 +24,7 @@ def get_image(image_id):
     response.headers['Content-Type'] = 'image/jpeg'
     return response
 
+### Menu items ###
 @db_routes.route('/add-item', methods=['GET', 'POST'])
 @login_required
 @role_required('Admin')
@@ -188,3 +189,11 @@ def delete_table(table_id):
         flash('Table not found.', 'danger')
 
     return redirect(url_for('db_routes.table_manager'))
+
+### Orders ###
+@db_routes.route('/order-manager', methods=['GET'])
+#@login_required
+#@role_required('Admin')
+def order_manager():
+    orders = users_collection.find({"role": {"$ne": "Admin"}})
+    return render_template('table_manager.html', tables=tables)
