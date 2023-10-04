@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, redirect, url_for, flash, abort#, session
+from flask import Blueprint, request, render_template, redirect, url_for, flash, abort
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from pymongo import MongoClient
 from bson import ObjectId
@@ -42,7 +42,7 @@ def admin_login():
             user = User(user_data['_id'], user_data['username'], user_data['role'])
             login_user(user)
             flash('User logged in successfully!', 'success')
-            return redirect(url_for('main_page'))
+            return redirect(url_for('menu'))
         else:
             flash('Login failed. Please check your credentials.', 'danger')
     else:
@@ -57,18 +57,18 @@ def qr_login():
         user = User(user_data['_id'], user_data['username'], user_data['role'])
         login_user(user)
         flash('User logged in successfully!', 'success')
-        return redirect(url_for('main_page'))
+        return redirect(url_for('menu'))
     else:
         flash('Login failed. User not found.', 'danger')
 
-    return redirect(url_for('main_page'))
+    return redirect(url_for('menu'))
 
 @auth_routes.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
     flash('User logged out successfully!', 'success')
-    return redirect(url_for('main_page'))
+    return redirect(url_for('menu'))
 
 def role_required(required_role):
     def decorator(f):

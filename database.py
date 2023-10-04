@@ -50,7 +50,7 @@ def add_item():
         else:
             flash('Failed to add item.', 'danger')
 
-        return redirect(url_for('main_page'))
+        return redirect(url_for('menu'))
     else:
         return render_template('add_item_form.html')
 
@@ -82,7 +82,7 @@ def modify_item(item_id):
                 fs.put(image, filename=image.filename, _id=old_image_id)
 
         flash('Item modified successfully!', 'success')
-        return redirect(url_for('main_page'))
+        return redirect(url_for('menu'))
     
     return render_template('modify_item_form.html', item=item_data)
 
@@ -105,7 +105,7 @@ def delete_item(item_id):
     else:
         flash('Item not found.', 'danger')
 
-    return redirect(url_for('main_page'))
+    return redirect(url_for('menu'))
 
 ### Tables ###
 @db_routes.route('/table-manager', methods=['GET'])

@@ -11,11 +11,11 @@ app.register_blueprint(db_routes, url_prefix='/db')
 app.register_blueprint(session_routes, url_prefix='/session')
 login_manager.init_app(app)
 
-@app.route('/')
+@app.route('/menu')
 #@login_required
-def main_page():
+def menu():
     items = menu_collection.find()
-    return render_template('main_page.html', items=items)
+    return render_template('menu.html', items=items)
 
 if __name__ == '__main__':
     app.run(debug=True)
