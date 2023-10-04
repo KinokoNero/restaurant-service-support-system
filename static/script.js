@@ -30,6 +30,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const modifyTableButtons = document.querySelectorAll('.modify-table-button');
+    if(modifyTableButtons != null) {
+        modifyTableButtons.forEach(button => {
+            const tableId = button.getAttribute('table-id');
+            button.addEventListener('click', function() {
+                window.location.href = `/db/modify-table/${tableId}`;
+            });
+        });
+    }
+
     const deleteButtons = document.querySelectorAll('.delete-button');
     deleteButtons.forEach(button => {
         button.addEventListener('click', handleDeleteButtonClick);

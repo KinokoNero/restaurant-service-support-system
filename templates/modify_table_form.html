@@ -1,0 +1,6 @@
+<form method="POST" action="{{ url_for('db_routes.modify_table', table_id=table._id) }}" enctype="multipart/form-data">
+    <label for="name">Nazwa:</label>
+    <input type="text" id="name" name="name" value="{{ table.name }}" required><br>
+
+    <input type="submit" value="Zapisz">
+</form>

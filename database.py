@@ -145,6 +145,26 @@ def add_table():
     else:
         return render_template('add_table_form.html')
 
+@db_routes.route('/modify-table/<table_id>', methods=['GET', 'POST'])
+@login_required
+@role_required('Admin')
+def modify_table(table_id):
+    table_data = users_collection.find_one({'_id': ObjectId(table_id)})
+    
+    if request.method == 'POST':
+        name = request.form['name']
+
+        users_collection.update_one({'_id': ObjectId(table_id)}, {
+            '$set': {
+                'name': name
+            }
+        })
+
+        flash('Table modified successfully!', 'success')
+        return redirect(url_for('db_routes.table_manager'))
+    
+    return render_template('modify_table_form.html', table=table_data)
+
 @db_routes.route('/delete-table/<table_id>', methods=['POST'])
 @login_required
 @role_required('Admin')
