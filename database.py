@@ -108,12 +108,12 @@ def delete_item(item_id):
     return redirect(url_for('menu'))
 
 ### Tables ###
-@db_routes.route('/table-manager', methods=['GET'])
+"""@db_routes.route('/table-manager', methods=['GET'])
 @login_required
 @role_required('Admin')
 def table_manager():
     tables = users_collection.find({"role": {"$ne": "Admin"}})
-    return render_template('table_manager.html', tables=tables)
+    return render_template('table_manager.html', tables=tables)"""
 
 @db_routes.route('/add-table', methods=['GET', 'POST'])
 @login_required
@@ -142,7 +142,7 @@ def add_table():
         else:
             flash('Failed to add table.', 'danger')
 
-        return redirect(url_for('db_routes.table_manager'))
+        return redirect(url_for('table_manager'))
     else:
         return render_template('add_table_form.html')
 
@@ -162,7 +162,7 @@ def modify_table(table_id):
         })
 
         flash('Table modified successfully!', 'success')
-        return redirect(url_for('db_routes.table_manager'))
+        return redirect(url_for('table_manager'))
     
     return render_template('modify_table_form.html', table=table_data)
 
@@ -188,7 +188,7 @@ def delete_table(table_id):
     else:
         flash('Table not found.', 'danger')
 
-    return redirect(url_for('db_routes.table_manager'))
+    return redirect(url_for('table_manager'))
 
 ### Orders ###
 @db_routes.route('/order-manager', methods=['GET'])

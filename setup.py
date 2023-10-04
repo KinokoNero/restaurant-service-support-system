@@ -37,7 +37,7 @@ admin_password = input("Podaj hasło do logowania administratora: ")
 hashed_password, salt = hash_password(admin_password)
 
 admin_document = {
-    'username': admin_username,
+    'name': admin_username,
     'password': hashed_password,
     'salt': salt,
     'role': 'Admin'

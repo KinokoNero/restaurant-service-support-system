@@ -15,6 +15,14 @@
             <button id="table-manager-button">Manager stołów</button>
             {% endif %}
         </div>
+        <div id="user-panel">
+            {% if current_user and current_user.role == "User" %}
+            <form method="POST" action="{{ url_for('auth_routes.logout') }}">
+                <input type="submit" value="Logout">
+            </form>
+            <button id="order-manager-button">Moje zamówienie</button>
+            {% endif %}
+        </div>
 
         <ul>
             {% for item in items %}
@@ -23,10 +31,17 @@
                 <p>{{ item.description }}</p>
                 <p>Cena: {{ item.price }} zł</p>
                 <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
+
                 {% if current_user and current_user.role == "Admin" %}
                 <button class="modify-item-button" item-id="{{ item._id }}">Edytuj</button>
                 <form method="POST" action="{{ url_for('db_routes.delete_item', item_id=item._id) }}">
                     <input class="delete-button" type="submit" value="Usuń">
+                </form>
+                {% endif %}
+
+                {% if current_user and current_user.role == "User" %}
+                <form method="POST" action="{{ url_for('session_routes.add_to_order', item_id=item._id) }}">
+                    <input type="submit" value="Dodaj do zamówienia">
                 </form>
                 {% endif %}
             </li>

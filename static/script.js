@@ -16,10 +16,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const orderManagerButton = document.getElementById('order-manager-button');
+    if(orderManagerButton != null) {
+        orderManagerButton.addEventListener('click', function() {
+            window.location.href = '/order-manager';
+        });
+    }
+
     const tableManagerButton = document.getElementById('table-manager-button');
     if(tableManagerButton != null) {
         tableManagerButton.addEventListener('click', function() {
-            window.location.href = '/db/table-manager';
+            window.location.href = '/table-manager';
         });
     }
 

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Zamówienie</title>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </head>
+    <body>
+        <ul>
+            {% set index = 0 %}
+            {% for item in items %}
+            <li>
+                <h2>{{ item.name }}</h2>
+                <p>{{ item.description }}</p>
+                <p>Cena: {{ item.price }} zł</p>
+                <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
+
+                <label for="additional-info">Dodatkowe informacje:</label>
+                <textarea id="additional-info" name="additional-info" rows="2"></textarea>
+
+                <form method="POST" action="{{ url_for('session_routes.remove_from_order', item_index=index) }}">
+                    <!--input type="hidden" name="item_index" value="{{ index }}"-->
+                    <input class="delete-button" type="submit" value="Usuń">
+                </form>
+            </li>
+            {% set index = index + 1 %}
+            {% endfor %}
+            <h3>Suma: </h3>
+        </ul>
+    </body>
+</html>
