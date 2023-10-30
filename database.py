@@ -10,7 +10,8 @@ import os
 db_routes = Blueprint('db_routes', __name__, template_folder='templates')
 
 # MongoDB configuration
-client = MongoClient("mongodb://localhost:27017/")
+mongodb_connection_uri = "mongodb://localhost:27017/r3s"
+client = MongoClient(mongodb_connection_uri)
 db = client["r3s"]
 users_collection = db["users"]
 menu_collection = db["menu"]
