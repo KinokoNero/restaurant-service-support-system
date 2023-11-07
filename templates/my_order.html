@@ -19,12 +19,12 @@
                 <textarea id="additional-info" name="additional-info" rows="2"></textarea>
 
                 <form method="POST" action="{{ url_for('session_routes.remove_from_order', item_index=index) }}">
-                    <!--input type="hidden" name="item_index" value="{{ index }}"-->
-                    <input class="delete-button" type="submit" value="Usuń">
+                    <button type="submit">Usuń</button>
                 </form>
             </li>
             {% set index = index + 1 %}
             {% endfor %}
+
             <h3>Suma: </h3>
         </ul>
     </body>

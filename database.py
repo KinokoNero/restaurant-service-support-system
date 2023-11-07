@@ -109,13 +109,6 @@ def delete_item(item_id):
     return redirect(url_for('menu'))
 
 ### Tables ###
-"""@db_routes.route('/table-manager', methods=['GET'])
-@login_required
-@role_required('Admin')
-def table_manager():
-    tables = users_collection.find({"role": {"$ne": "Admin"}})
-    return render_template('table_manager.html', tables=tables)"""
-
 @db_routes.route('/add-table', methods=['GET', 'POST'])
 @login_required
 @role_required('Admin')
@@ -190,11 +183,3 @@ def delete_table(table_id):
         flash('Table not found.', 'danger')
 
     return redirect(url_for('table_manager'))
-
-### Orders ###
-@db_routes.route('/order-manager', methods=['GET'])
-#@login_required
-#@role_required('Admin')
-def order_manager():
-    orders = users_collection.find({"role": {"$ne": "Admin"}})
-    return render_template('table_manager.html', tables=tables)

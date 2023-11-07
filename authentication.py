@@ -67,7 +67,7 @@ def qr_login():
 @login_required
 def logout():
     logout_user()
-    #TODO: add session clearing at logout
+    session = []
     flash('User logged out successfully!', 'success')
     return redirect(url_for('menu'))
 

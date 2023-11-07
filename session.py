@@ -5,7 +5,7 @@ import json
 
 session_routes = Blueprint('session_routes', __name__, template_folder='templates')
 
-class OrderItem:
+"""class OrderItem:
     def __init__(self, menu_item, additional_info=""):
         self.menu_item = menu_item
         self.additional_info = additional_info
@@ -29,18 +29,18 @@ class OrderItem:
             else:
                 serialized_menu_item[key] = value
 
-        return serialized_menu_item
+        return serialized_menu_item"""
 
 @session_routes.route('/add-to-order/<item_id>', methods=['POST'])
 def add_to_order(item_id):
-    item = menu_collection.find_one({'_id': ObjectId(item_id)})
-
     if 'order' not in session:
         session['order'] = []
 
-    order_item = OrderItem(item)
-    serialized_order_item = json.dumps(order_item.to_dict())
-    session['order'].append(serialized_order_item)
+    order_item = {
+        "item_id": item_id,
+        "additional_info": ""
+    }
+    session['order'].append(order_item)
 
     # Check the source of the request
     source = request.args.get('source')
