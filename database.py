@@ -5,6 +5,7 @@ from authentication import role_required
 from qr import qr_codes_directory, generate_qr_code
 from gridfs import GridFS
 from bson import ObjectId
+from flask_session import Session
 import os
 
 db_routes = Blueprint('db_routes', __name__, template_folder='templates')
@@ -183,3 +184,16 @@ def delete_table(table_id):
         flash('Table not found.', 'danger')
 
     return redirect(url_for('table_manager'))
+
+### Helper methods ###
+def get_menu():
+    return menu_collection.find()
+
+def get_tables():
+    return users_collection.find({"role": {"$ne": "Admin"}})
+
+def get_orders():
+    return orders_collection.find()
+
+def get_menu_item(item_id):
+    return menu_collection.find_one({'_id': ObjectId(item_id)})

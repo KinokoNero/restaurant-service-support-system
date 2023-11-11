@@ -1,7 +1,7 @@
 from flask import Flask, render_template, session
 from authentication import auth_routes, login_manager, role_required
-from database import db_routes, client, menu_collection, users_collection, orders_collection
-from session import session_routes
+from database import db_routes, client, get_menu, get_tables
+from session import session_routes, get_current_user_order_info
 from flask_session import Session
 from flask_login import login_required
 
@@ -24,33 +24,29 @@ Session(app)
 @app.route('/menu', methods=['GET'])
 @login_required
 def menu():
-    items = menu_collection.find()
+    items = get_menu()
     return render_template('menu.html', items=items)
 
 @app.route('/table-manager', methods=['GET'])
 @login_required
 @role_required('Admin')
 def table_manager():
-    tables = users_collection.find({"role": {"$ne": "Admin"}})
+    tables = get_tables()
     return render_template('table_manager.html', tables=tables)
 
 @app.route('/orders-manager', methods=['GET'])
 @login_required
 @role_required('Admin')
 def orders_manager():
-    orders = orders_collection.find()
+    orders = get_orders()
     return render_template('orders_manager.html', orders=orders)
 
-@app.route('/my-order', methods=['GET'])
+@app.route('/current-user-order', methods=['GET'])
 @login_required
 @role_required('User')
-def my_order():
-    if 'order' not in session:
-        session['order'] = []
-
-    items = session['order']
-    print(session['order']) #TEST------------------------------------------------------------------------------------------------------------------------
-    return render_template('my_order.html', items=items)
+def current_user_order():
+    order_items, order_sum = get_current_user_order_info()
+    return render_template('current_user_order.html', order_items=order_items, order_sum=order_sum)
 
 if __name__ == '__main__':
     app.run(debug=True)

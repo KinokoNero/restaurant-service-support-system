@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Zamówienie</title>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </head>
+    <body>
+        <div id="user-panel">
+            <a href="/menu">Wróć do menu</a>
+        </div>
+
+        <ul id="order-items">
+            {% set index = 0 %}
+            {% for order_item in order_items %}
+            <li id="order-item-{{ loop.index0 }}" class="order-item">
+                <h2>{{ order_item.menu_item.name }}</h2>
+                <p>{{ order_item.menu_item.description }}</p>
+                <p>Cena: {{ order_item.menu_item.price }} zł</p>
+                <img src="{{ url_for('db_routes.get_image', image_id=order_item.menu_item.image_id) }}">
+
+                <!--ADD ELEMENT THAT ALLOWS CHANGING THE COUNT-->
+
+                <label for="additional-info">Dodatkowe informacje:</label>
+                <textarea id="additional-info-{{ loop.index0 }}" name="additional-info" rows="2">{{ order_item.additional_info }}</textarea>
+
+                <form method="POST" action="{{ url_for('session_routes.remove_from_order', item_index=index) }}">
+                    <button type="submit">Usuń</button>
+                </form>
+            </li>
+            {% set index = index + 1 %}
+            {% endfor %}
+        </ul>
+        <h3>Suma: {{ order_sum }} zł</h3>
+    </body>
+</html>

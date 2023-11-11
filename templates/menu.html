@@ -3,11 +3,10 @@
     <head>
         <meta charset="UTF-8">
         <title>Menu</title>
-        <script src="{{ url_for('static', filename='script.js') }}"></script>
     </head>
     <body>
         {% if current_user and current_user.role == "Admin" %}
-        <div id="adminPanel">
+        <div id="admin-panel">
             <form method="POST" action="{{ url_for('auth_routes.logout') }}">
                 <input type="submit" value="Wyloguj">
             </form>
@@ -18,11 +17,11 @@
         {% endif %}
 
         {% if current_user and current_user.role == "User" %}
-        <div id="userPanel">
+        <div id="user-panel">
             <form method="POST" action="{{ url_for('auth_routes.logout') }}"> <!--LOGOUT FORM FOR USER IS ONLY FOR TESTING, DELETE LATER-->
                 <input type="submit" value="Wyloguj">
             </form>
-            <a href="/my-order">Moje zamówienie</a>
+            <a href="/current-user-order">Moje zamówienie</a>
         </div>
         {% endif %}
 
