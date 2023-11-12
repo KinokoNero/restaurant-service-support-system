@@ -4,11 +4,41 @@ from flask_login import login_required, current_user
 from authentication import role_required
 from qr import qr_codes_directory, generate_qr_code
 from gridfs import GridFS
-from bson import ObjectId
+from bson import json_util, ObjectId
 from flask_session import Session
 import os
+import json
 
 db_routes = Blueprint('db_routes', __name__, template_folder='templates')
+
+class MenuItem:
+    def __init__(self, name, description, price, image_id, _id=None):
+        self.name = name
+        self.description = description
+        self.price = price
+        self._id = _id
+        self.image_id = image_id
+
+    def to_dict(self):
+        menu_item = {
+            'name': self.name,
+            'description': self.description,
+            'price': float(self.price),
+            'image_id': ObjectId(self.image_id),
+        }
+        if self._id is not None:
+            menu_item['_id'] = str(self._id)
+        return menu_item
+
+    @classmethod
+    def from_dict(cls, menu_item_dict):
+        return cls(
+            name=menu_item_dict['name'],
+            description=menu_item_dict['description'],
+            price=float(menu_item_dict['price']),
+            image_id=ObjectId(menu_item_dict['image_id']),
+            _id=menu_item_dict.get('_id')
+        )
 
 # MongoDB configuration
 mongodb_connection_uri = "mongodb://localhost:27017/r3s"
@@ -38,14 +68,10 @@ def add_item():
         image = request.files['image']
         image_id = fs.put(image, filename=image.filename)
 
-        item_document = {
-            'name': name,
-            'description': description,
-            'price': float(price),
-            'image_id': image_id
-        }
+        item = MenuItem(name, description, price, image_id)
+        item_dict = item.to_dict()
 
-        result = menu_collection.insert_one(item_document)
+        result = menu_collection.insert_one(item_dict)
 
         if result.acknowledged:
             flash('Item added successfully!', 'success')
@@ -60,28 +86,29 @@ def add_item():
 @login_required
 @role_required('Admin')
 def modify_item(item_id):
-    item_data = menu_collection.find_one({'_id': ObjectId(item_id)})
+    item_id = ObjectId(item_id)
+    item_data = menu_collection.find_one({'_id': item_id})
     
     if request.method == 'POST':
-        name = request.form['name']
-        description = request.form['description']
-        price = float(request.form['price'])
+        menu_item = MenuItem.from_dict(item_data)
 
-        menu_collection.update_one({'_id': ObjectId(item_id)}, {
-            '$set': {
-                'name': name,
-                'description': description,
-                'price': price
-            }
+        menu_item.name = request.form['name']
+        menu_item.description = request.form['description']
+        menu_item.price = request.form['price']
+        
+        menu_item_dict = menu_item.to_dict()
+        menu_item_dict.pop('_id') # Remove id for update
+        
+        menu_collection.update_one({'_id': item_id}, {
+            '$set': menu_item_dict
         })
 
         # Update image if selected in form
-        if 'image' in request.files:
-            image = request.files['image']
-            if image and image.filename != '':
-                old_image_id = ObjectId(item_data.get("image_id"))
-                fs.delete(old_image_id)
-                fs.put(image, filename=image.filename, _id=old_image_id)
+        image = request.files['image']
+        if image and image.filename != '':
+            old_image_id = ObjectId(item_data.get("image_id"))
+            fs.delete(old_image_id)
+            fs.put(image, filename=image.filename, _id=old_image_id)
 
         flash('Item modified successfully!', 'success')
         return redirect(url_for('menu'))
@@ -115,7 +142,7 @@ def delete_item(item_id):
 @role_required('Admin')
 def add_table():
     if request.method == 'POST':
-        name = request.form['name']
+        name = request.form['name'] #TODO: add user class and change methods like for menu items
         role = 'User'
 
         table_document = {
