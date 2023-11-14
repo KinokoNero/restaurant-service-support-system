@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+/*document.addEventListener("DOMContentLoaded", function () {
     var textareas = document.querySelectorAll('[id^="additional-info-"]');
 
     textareas.forEach(function(textarea) {
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data)
-            });*/
+            });
         });
     });
-});
+});*/
