@@ -64,10 +64,13 @@ def remove_from_order(item_index):
 @session_routes.route('/update-order-item/<item_index>', methods=['POST'])
 @login_required
 @role_required('User')
-def update_order_item(item_index): #TODO: test updating the order item by count and additional info
+def update_order_item(item_index):
+    item_index = int(item_index)
+
     if 'order' in session:
         order = session['order']
         order_item = order[item_index]
+        print(request.data.decode('utf-8'))
 
         menu_item_id = order_item['menu_item_id']
         item_count = request.form['item-count']

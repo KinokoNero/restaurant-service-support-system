@@ -3,42 +3,41 @@
     <head>
         <meta charset="UTF-8">
         <title>Zamówienie</title>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
         <script>
-            var orderInfoForms = document.getElementsByClassName("order-info-form");
-            var itemCountInputs = document.getElementsByClassName("item-count");
-            var additionalInfoTextareas = document.getElementsByClassName('additional-info');
+            document.addEventListener("DOMContentLoaded", function() {
+                //restoreScrollPosition();
 
-            for (var i = 0; i < itemCountInputs.length; i++) {
-                itemCountInputs[i].addEventListener('input', function() {
-                    var itemCountInput = event.target;
+                var orderInfoForms = document.getElementsByClassName("order-info-form");
+                var itemCountInputs = document.getElementsByClassName("item-count");
+                var additionalInfoTextareas = document.getElementsByClassName('additional-info');
 
-                    if(itemCountInput.value > 0) {
-                        orderInfoForm.submit();
-                    }
-                    else {
+                for (var i = 0; i < itemCountInputs.length; i++) {
+                    itemCountInputs[i].addEventListener("change", function() {
+                        var itemCountInput = event.target;
                         var itemIndex = parseInt(itemCountInput.id.match(/\d+/)[0]);
+                        var orderInfoForm = itemCountInput.closest("form");
+                        
+                        itemCountInput.value = Math.max(1, Math.round(Number(itemCountInput.value)));
 
-                        fetch(`/remove_from_order/${itemIndex}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            //body: JSON.stringify({ item_index: itemIndex }) <!--TODO: check if this line is necessary-->
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
-                    }
-                });
-            }
+                        saveScrollPosition();
+                        
+                        orderInfoForm.submit();
+                    });
+                }
 
-            for (var i = 0; i < additionalInfoTextareas.length; i++) {
-                additionalInfoTextareas[i].addEventListener('input', function() {
-                    var additionalInfoTextarea = event.target;
-                    var orderInfoForm = additionalInfoTextarea.closest("form")
-                    orderInfoForm.submit();
-                });
-            }
+                for (var i = 0; i < additionalInfoTextareas.length; i++) {
+                    additionalInfoTextareas[i].addEventListener("change", function() {
+                        var additionalInfoTextarea = event.target;
+                        var itemIndex = parseInt(additionalInfoTextarea.id.match(/\d+/)[0]);
+                        var orderInfoForm = additionalInfoTextarea.closest("form");
+
+                        saveScrollPosition();
+
+                        orderInfoForm.submit();
+                    });
+                }
+            });
         </script>
     </head>
     <body>
@@ -55,16 +54,16 @@
                 <p>Cena: {{ order_item.menu_item.price }} zł</p>
                 <img src="{{ url_for('db_routes.get_image', image_id=order_item.menu_item.image_id) }}">
 
-                <form id="order-info-form-{{ loop.index0 }}" class="order-info-form" method="POST" action="{{ url_for('session_routes.update_order_item', item_index=index) }}">
+                <form id="order-info-form-{{ loop.index0 }}" class="order-info-form" method="POST" action="{{ url_for('session_routes.update_order_item', item_index=loop.index0) }}">
                     <label for="item-count">Ilość:</label>
-                    <input type="number" id="item-count-{{ loop.index0 }}" class="item-count" name="item-count" value="{{ order_item.count }}" step="1">
+                    <input type="number" id="item-count-{{ loop.index0 }}" class="item-count" name="item-count" value="{{ order_item.count }}" step="1" min="1"/>
 
                     <label for="additional-info">Dodatkowe informacje:</label>
                     <textarea id="additional-info-{{ loop.index0 }}" class="additional-info" name="additional-info" rows="2">{{ order_item.additional_info }}</textarea>
                 </form>
 
-                <form id="delete-form" method="POST" action="{{ url_for('session_routes.remove_from_order', item_index=index) }}">
-                    <button type="submit">Usuń</button>
+                <form id="delete-form" method="POST" action="{{ url_for('session_routes.remove_from_order', item_index=loop.index0) }}">
+                    <button type="submit" onclick="saveScrollPosition()">Usuń</button>
                 </form>
             </li>
             {% set index = index + 1 %}

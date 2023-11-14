@@ -1,24 +1,22 @@
-/*document.addEventListener("DOMContentLoaded", function () {
-    var textareas = document.querySelectorAll('[id^="additional-info-"]');
+document.addEventListener("DOMContentLoaded", function() {
+    restoreScrollPosition();
+});
 
-    textareas.forEach(function(textarea) {
-        textarea.addEventListener("input", function() {
-            var index = textarea.id.split('-').pop();
-            var newValue = textarea.value;
+const scrollDelay = 100; //ms
 
-            var url = `{{ url_for('session_routes.update_order_item', item_index=${index}) }}`;
-            var data = {
-                additional_info: newValue
-            };
+function saveScrollPosition() {
+    localStorage.setItem('scrollPositionX', window.scrollX);
+    localStorage.setItem('scrollPositionY', window.scrollY);
+}
 
-            //TODO: pass the new value to the update function
-            /*fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            });
-        });
-    });
-});*/
+function restoreScrollPosition() {
+    var scrollPositionX = localStorage.getItem('scrollPositionX');
+    var scrollPositionY = localStorage.getItem('scrollPositionY');
+    if (scrollPositionX !== null && scrollPositionY !== null) {
+        setTimeout(function () {
+            window.scrollTo(parseInt(scrollPositionX), parseInt(scrollPositionY));
+        }, scrollDelay);
+        localStorage.removeItem('scrollPositionX');
+        localStorage.removeItem('scrollPositionY');
+    }
+}

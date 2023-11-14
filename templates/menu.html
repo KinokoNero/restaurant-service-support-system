@@ -45,7 +45,7 @@
 
                 {% if current_user and current_user.role == "User" %}
                 <form method="POST" action="{{ url_for('session_routes.add_to_order', item_id=item._id) }}">
-                    <input type="submit" value="Dodaj do zamówienia">
+                    <input type="submit" value="Dodaj do zamówienia"/>
                 </form>
                 {% endif %}
             </li>
