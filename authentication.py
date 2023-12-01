@@ -82,3 +82,6 @@ def role_required(required_role):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
+def get_current_user():
+    return current_user

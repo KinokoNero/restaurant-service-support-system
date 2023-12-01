@@ -6,8 +6,6 @@
         <script src="{{ url_for('static', filename='script.js') }}"></script>
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                //restoreScrollPosition();
-
                 var orderInfoForms = document.getElementsByClassName("order-info-form");
                 var itemCountInputs = document.getElementsByClassName("item-count");
                 var additionalInfoTextareas = document.getElementsByClassName('additional-info');
@@ -69,6 +67,12 @@
             {% set index = index + 1 %}
             {% endfor %}
         </ul>
+        {% if order_items %}
+        <form method="POST" action="{{ url_for('session_routes.place_order') }}">
+            <button type="submit">Złóż zamówienie</button>
+        </form>
+        {% endif %}
+
         <h3>Suma: {{ order_sum }} zł</h3>
     </body>
 </html>

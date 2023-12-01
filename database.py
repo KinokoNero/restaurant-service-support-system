@@ -2,6 +2,7 @@ from flask import Blueprint, request, render_template, flash, redirect, url_for,
 from pymongo import MongoClient
 from flask_login import login_required, current_user
 from authentication import role_required
+from classes import MenuItem
 from qr import qr_codes_directory, generate_qr_code
 from gridfs import GridFS
 from bson import json_util, ObjectId
@@ -10,35 +11,6 @@ import os
 import json
 
 db_routes = Blueprint('db_routes', __name__, template_folder='templates')
-
-class MenuItem:
-    def __init__(self, name, description, price, image_id, _id=None):
-        self.name = name
-        self.description = description
-        self.price = price
-        self._id = _id
-        self.image_id = image_id
-
-    def to_dict(self):
-        menu_item = {
-            'name': self.name,
-            'description': self.description,
-            'price': float(self.price),
-            'image_id': ObjectId(self.image_id),
-        }
-        if self._id is not None:
-            menu_item['_id'] = str(self._id)
-        return menu_item
-
-    @classmethod
-    def from_dict(cls, menu_item_dict):
-        return cls(
-            name=menu_item_dict['name'],
-            description=menu_item_dict['description'],
-            price=float(menu_item_dict['price']),
-            image_id=ObjectId(menu_item_dict['image_id']),
-            _id=menu_item_dict.get('_id')
-        )
 
 # MongoDB configuration
 mongodb_connection_uri = "mongodb://localhost:27017/r3s"
@@ -212,6 +184,16 @@ def delete_table(table_id):
 
     return redirect(url_for('table_manager'))
 
+### Order ###
+@db_routes.route('/place-order', methods=['POST'])
+@login_required
+@role_required('User')
+def submit_order():
+    if 'order' in session:
+        order = session['order']
+        print(order)
+
+
 ### Helper methods ###
 def get_menu():
     return menu_collection.find()
@@ -223,4 +205,6 @@ def get_orders():
     return orders_collection.find()
 
 def get_menu_item(item_id):
-    return menu_collection.find_one({'_id': ObjectId(item_id)})
+    menu_item_dict = menu_collection.find_one({'_id': ObjectId(item_id)})
+    menu_item = MenuItem.from_dict(menu_item_dict)
+    return menu_item
