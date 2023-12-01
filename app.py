@@ -1,5 +1,6 @@
 from flask import Flask, render_template, session
 from authentication import auth_routes, login_manager, role_required
+from classes import Role
 from database import db_routes, client, get_menu, get_tables
 from session import session_routes, get_current_user_order_info
 from flask_session import Session
@@ -21,6 +22,9 @@ app.config['SESSION_TYPE'] = 'mongodb'
 app.config['SESSION_MONGODB'] = client
 Session(app)
 
+# Global variables accessible in templates
+app.jinja_env.globals['Role'] = Role # Role enum
+
 @app.route('/menu', methods=['GET'])
 @login_required
 def menu():
@@ -29,21 +33,21 @@ def menu():
 
 @app.route('/table-manager', methods=['GET'])
 @login_required
-@role_required('Admin')
+@role_required(Role.ADMIN)
 def table_manager():
     tables = get_tables()
     return render_template('table_manager.html', tables=tables)
 
 @app.route('/orders-manager', methods=['GET'])
 @login_required
-@role_required('Admin')
+@role_required(Role.ADMIN)
 def orders_manager():
     orders = get_orders()
     return render_template('orders_manager.html', orders=orders)
 
 @app.route('/current-user-order', methods=['GET'])
 @login_required
-@role_required('User')
+@role_required(Role.USER)
 def current_user_order():
     order_items, order_sum = get_current_user_order_info()
     return render_template('current_user_order.html', order_items=order_items, order_sum=order_sum)

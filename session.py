@@ -1,7 +1,7 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session
 from bson import ObjectId
 from database import get_menu_item, submit_order
-from classes import MenuItem, OrderItem
+from classes import Role, MenuItem, OrderItem
 from authentication import login_required, role_required
 import json
 
@@ -9,14 +9,13 @@ session_routes = Blueprint('session_routes', __name__, template_folder='template
 
 @session_routes.route('/add-to-order/<item_id>', methods=['POST'])
 @login_required
-@role_required('User')
+@role_required(Role.USER)
 def add_to_order(item_id):
     if 'order' not in session:
         session['order'] = []
 
     menu_item = get_menu_item(item_id)
     order_item = OrderItem(menu_item=menu_item, count=1, additional_info="")
-    #order_item = OrderItem(menu_item_id=item_id, count=1, additional_info="")
     order_item_dict = order_item.to_dict()
 
     session['order'].append(order_item_dict)
@@ -30,7 +29,7 @@ def add_to_order(item_id):
 
 @session_routes.route('/remove-from-order/<item_index>', methods=['POST'])
 @login_required
-@role_required('User')
+@role_required(Role.USER)
 def remove_from_order(item_index):
     if 'order' in session:
         order = session['order']
@@ -44,7 +43,7 @@ def remove_from_order(item_index):
 
 @session_routes.route('/update-order-item/<item_index>', methods=['POST'])
 @login_required
-@role_required('User')
+@role_required(Role.USER)
 def update_order_item(item_index):
     item_index = int(item_index)
 
@@ -72,19 +71,20 @@ def get_current_user_order_info():
         order_item = OrderItem.from_dict(order_item_dict)
         order_items.append(order_item)
         
-        order_sum = order_sum + order_item.menu_item.price
+        order_sum = order_sum + order_item.menu_item.price * order_item.count
         order_sum = round(order_sum, 2)
 
     return order_items, order_sum
 
 @session_routes.route('/place-order', methods=['POST'])
 @login_required
-@role_required('User')
+@role_required(Role.USER)
 def place_order():
     if 'order' in session:
         order = session['order']
 
         if order:
-            print(order)
+            submit_order(order)
+            session['order'] = []
     
     return redirect(url_for('menu'))

@@ -2,7 +2,7 @@ from flask import Blueprint, request, render_template, flash, redirect, url_for,
 from pymongo import MongoClient
 from flask_login import login_required, current_user
 from authentication import role_required
-from classes import MenuItem
+from classes import Role, User, MenuItem
 from qr import qr_codes_directory, generate_qr_code
 from gridfs import GridFS
 from bson import json_util, ObjectId
@@ -31,7 +31,7 @@ def get_image(image_id):
 ### Menu items ###
 @db_routes.route('/add-item', methods=['GET', 'POST'])
 @login_required
-@role_required('Admin')
+@role_required(Role.ADMIN)
 def add_item():
     if request.method == 'POST':
         name = request.form['name']
@@ -56,7 +56,7 @@ def add_item():
 
 @db_routes.route('/modify-item/<item_id>', methods=['GET', 'POST'])
 @login_required
-@role_required('Admin')
+@role_required(Role.ADMIN)
 def modify_item(item_id):
     item_id = ObjectId(item_id)
     item_data = menu_collection.find_one({'_id': item_id})
@@ -89,7 +89,7 @@ def modify_item(item_id):
 
 @db_routes.route('/delete-item/<item_id>', methods=['POST'])
 @login_required
-@role_required('Admin')
+@role_required(Role.ADMIN)
 def delete_item(item_id):
     item_id = ObjectId(item_id)
     item = menu_collection.find_one({'_id': item_id})
@@ -111,18 +111,15 @@ def delete_item(item_id):
 ### Tables ###
 @db_routes.route('/add-table', methods=['GET', 'POST'])
 @login_required
-@role_required('Admin')
+@role_required(Role.ADMIN)
 def add_table():
     if request.method == 'POST':
-        name = request.form['name'] #TODO: add user class and change methods like for menu items
-        role = 'User'
+        name = request.form['name']
 
-        table_document = {
-            'name': name,
-            'role': role
-        }
+        table = User(id=None, name=name, role=Role.USER)
+        table_dict = table.to_dict()
 
-        result = users_collection.insert_one(table_document)
+        result = users_collection.insert_one(table_dict)
 
         if result.acknowledged:
             inserted_id = result.inserted_id
@@ -132,6 +129,7 @@ def add_table():
                 {'_id': inserted_id},
                 {'$set': {'qr_code_image_id': qr_code_image_id}}
             )
+
             flash('Table added successfully!', 'success')
         else:
             flash('Failed to add table.', 'danger')
@@ -142,7 +140,7 @@ def add_table():
 
 @db_routes.route('/modify-table/<table_id>', methods=['GET', 'POST'])
 @login_required
-@role_required('Admin')
+@role_required(Role.ADMIN)
 def modify_table(table_id):
     table_data = users_collection.find_one({'_id': ObjectId(table_id)})
     
@@ -162,7 +160,7 @@ def modify_table(table_id):
 
 @db_routes.route('/delete-table/<table_id>', methods=['POST'])
 @login_required
-@role_required('Admin')
+@role_required(Role.ADMIN)
 def delete_table(table_id):
     table_id = ObjectId(table_id)
     table = users_collection.find_one({'_id': table_id})
@@ -173,9 +171,9 @@ def delete_table(table_id):
 
         if result.deleted_count > 0:
             fs.delete(qr_code_image_id)
-            file_path = f"{qr_codes_directory}/{table_id}.png"
+            """file_path = f"{qr_codes_directory}/{table_id}.png"
             if os.path.exists(file_path):
-                os.remove(file_path)
+                os.remove(file_path)"""
             flash('Table deleted successfully!', 'success')
         else:
             flash('Table could not be deleted.', 'danger')
@@ -184,22 +182,13 @@ def delete_table(table_id):
 
     return redirect(url_for('table_manager'))
 
-### Order ###
-@db_routes.route('/place-order', methods=['POST'])
-@login_required
-@role_required('User')
-def submit_order():
-    if 'order' in session:
-        order = session['order']
-        print(order)
-
 
 ### Helper methods ###
 def get_menu():
     return menu_collection.find()
 
 def get_tables():
-    return users_collection.find({"role": {"$ne": "Admin"}})
+    return users_collection.find({"role": {"$ne": "admin"}})
 
 def get_orders():
     return orders_collection.find()
@@ -208,3 +197,6 @@ def get_menu_item(item_id):
     menu_item_dict = menu_collection.find_one({'_id': ObjectId(item_id)})
     menu_item = MenuItem.from_dict(menu_item_dict)
     return menu_item
+
+def submit_order(order): #TODO
+    print(order)

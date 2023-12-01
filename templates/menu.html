@@ -5,7 +5,7 @@
         <title>Menu</title>
     </head>
     <body>
-        {% if current_user and current_user.role == "Admin" %}
+        {% if current_user and current_user.role == Role.ADMIN %}
         <div id="admin-panel">
             <form method="POST" action="{{ url_for('auth_routes.logout') }}">
                 <input type="submit" value="Wyloguj">
@@ -16,7 +16,7 @@
         </div>
         {% endif %}
 
-        {% if current_user and current_user.role == "User" %}
+        {% if current_user and current_user.role == Role.USER %}
         <div id="user-panel">
             <form method="POST" action="{{ url_for('auth_routes.logout') }}"> <!--LOGOUT FORM FOR USER IS ONLY FOR TESTING, DELETE LATER-->
                 <input type="submit" value="Wyloguj">
@@ -33,7 +33,7 @@
                 <p>Cena: {{ item.price }} zł</p>
                 <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
 
-                {% if current_user and current_user.role == "Admin" %}
+                {% if current_user and current_user.role == Role.ADMIN %}
                 <form method="GET" action="{{ url_for('db_routes.modify_item', item_id=item._id) }}">
                     <button type="submit">Edytuj</button>
                 </form>
@@ -43,7 +43,7 @@
                 </form>
                 {% endif %}
 
-                {% if current_user and current_user.role == "User" %}
+                {% if current_user and current_user.role == Role.USER %}
                 <form method="POST" action="{{ url_for('session_routes.add_to_order', item_id=item._id) }}">
                     <input type="submit" value="Dodaj do zamówienia"/>
                 </form>

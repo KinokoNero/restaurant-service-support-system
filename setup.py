@@ -40,7 +40,7 @@ admin_document = {
     'name': admin_username,
     'password': hashed_password,
     'salt': salt,
-    'role': 'Admin'
+    'role': 'admin'
 }
 
 result = db["users"].insert_one(admin_document)

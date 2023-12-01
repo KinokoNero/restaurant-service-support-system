@@ -4,6 +4,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 from functools import wraps
 from security import verify_password
+from classes import Role, User
 
 # Admin routes blueprint
 auth_routes = Blueprint('auth_routes', __name__, template_folder='templates')
@@ -13,12 +14,6 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["r3s"]
 users = db["users"]
 
-class User(UserMixin):
-    def __init__(self, id, name, role):
-        self.id = id
-        self.name = name
-        self.role = role
-
 # Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.login_view = 'auth_routes.admin_login'
@@ -27,7 +22,7 @@ login_manager.login_view = 'auth_routes.admin_login'
 def load_user(user_id):
     user_data = users.find_one({'_id': ObjectId(user_id)})
     if user_data:
-        return User(user_data['_id'], user_data['name'], user_data['role'])
+        return User.from_dict(user_data)
 
 @auth_routes.route('/login/admin', methods=['GET', 'POST'])
 def admin_login():
@@ -35,11 +30,11 @@ def admin_login():
         name = request.form['name']
         password = request.form['password']
 
-        user_data = users.find_one({'name': name, 'role': "Admin"})
+        user_data = users.find_one({'name': name, 'role': 'admin'})
         correct_password = verify_password(password, user_data.get("password"), user_data.get("salt"))
         
         if user_data and correct_password:
-            user = User(user_data['_id'], user_data['name'], user_data['role'])
+            user = User.from_dict(user_data)
             login_user(user)
             flash('User logged in successfully!', 'success')
             return redirect(url_for('menu'))
@@ -54,7 +49,7 @@ def qr_login():
     user_data = users.find_one({'_id': ObjectId(table_id)})
 
     if user_data:
-        user = User(user_data['_id'], user_data['name'], user_data['role'])
+        user = User.from_dict(user_data)
         login_user(user)
         flash('User logged in successfully!', 'success')
         return redirect(url_for('menu'))
