@@ -1,0 +1,36 @@
+<a href="/menu">Wróć do menu</a>
+<br><br>
+<form method="POST" action="{{ url_for('session_routes.submit_service_request') }}" enctype="multipart/form-data">
+    <label for="request-type">Rodzaj prośby:</label>
+    <select name="request-type" id="request-type">
+        {% for type in service_request_types %}
+            <option value="{{ type.value }}">{{ service_request_type_display_strings[type] }}</option>
+        {% endfor %}
+    </select>
+    <br>
+
+    <label id="custom-info-label" for="custom-info" style="display: none;">Informacje prośby niestandardowej:</label>
+    <textarea name="custom-info" id="custom-info" rows="4" cols="50" style="display: none;" disabled></textarea>
+    <br>
+
+    <button type="submit">Wyślij prośbę do obsługi</button>
+</form>
+<script>
+    const serviceRequestTypeDropdown = document.getElementById('request-type');
+    const customInfoLabel = document.getElementById('custom-info-label');
+    const customInfoTextarea = document.getElementById('custom-info');
+
+    serviceRequestTypeDropdown.addEventListener('change', function() {
+        const selectedValue = this.value;
+        if (selectedValue === '{{ service_request_types.CUSTOM.value }}') {
+            customInfoLabel.style.display = 'block';
+            customInfoTextarea.style.display = 'block';
+            customInfoTextarea.disabled = false;
+        }
+        else {
+            customInfoLabel.style.display = 'none';
+            customInfoTextarea.style.display = 'none';
+            customInfoTextarea.disabled = true;
+        }
+    });
+</script>

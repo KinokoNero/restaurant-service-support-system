@@ -1,12 +1,13 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session
 from bson import ObjectId
-from database import get_menu_item, submit_order
-from classes import Role, MenuItem, OrderItem, Order
+from database import get_menu_item, insert_order, insert_service_request
+from classes import Role, MenuItem, OrderItem, Order, ServiceRequestType, ServiceRequest
 from authentication import login_required, role_required, current_user
 import json
 
 session_routes = Blueprint('session_routes', __name__, template_folder='templates')
 
+### Order ###
 @session_routes.route('/add-to-order/<item_id>', methods=['POST'])
 @login_required
 @role_required(Role.USER)
@@ -15,7 +16,7 @@ def add_to_order(item_id):
         session['order'] = []
 
     menu_item = get_menu_item(item_id)
-    order_item = OrderItem(menu_item=menu_item, count=1, additional_info='')
+    order_item = OrderItem(menu_item_id=item_id, count=1, additional_info='')
     order_item_dict = order_item.to_dict()
 
     session['order'].append(order_item_dict)
@@ -69,6 +70,7 @@ def get_current_user_order_info():
 
     for order_item_dict in session['order']:
         order_item = OrderItem.from_dict(order_item_dict)
+        order_item.menu_item = get_menu_item(order_item.menu_item_id)
         order_items.append(order_item)
         
         order_sum = order_sum + order_item.menu_item.price * order_item.count
@@ -79,17 +81,32 @@ def get_current_user_order_info():
 @session_routes.route('/place-order', methods=['POST'])
 @login_required
 @role_required(Role.USER)
-def place_order():
+def place_order():                      #TODO: collapse multiple separate identical menu items into a single one with approporiate count value
     if 'order' in session:
         order_list = session['order']
         order_items = []
         for order_item_dict in order_list:
             order_items.append(OrderItem.from_dict(order_item_dict))
 
-        order = Order(orderer=current_user, order_items=order_items)
+        order = Order(orderer_id=current_user.id, order_items=order_items)
         
-        result_successful = submit_order(order)
+        result_successful = insert_order(order)
         if result_successful:
             session['order'] = []
     
+    return redirect(url_for('menu'))
+
+### User requests ###
+@session_routes.route('/submit-service-request', methods=['POST'])
+@login_required
+@role_required(Role.USER)
+def submit_service_request():
+    request_type = ServiceRequestType(request.form['request-type'])
+    service_request = ServiceRequest(requester_id=current_user.id, request_type=request_type)
+
+    if request_type == ServiceRequestType.CUSTOM:
+        service_request.custom_info = request.form['custom-info']
+
+    insert_service_request(service_request)
+
     return redirect(url_for('menu'))

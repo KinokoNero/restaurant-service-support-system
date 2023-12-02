@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template, flash, redirect, url_for, make_response
 from pymongo import MongoClient
-from flask_login import login_required, current_user
+from flask_login import login_required
 from authentication import role_required
 from classes import Role, User, MenuItem
 from qr import qr_codes_directory, generate_qr_code
@@ -47,9 +47,9 @@ def add_item():
         result = menu_collection.insert_one(item_dict)
 
         if result.acknowledged:
-            flash('Item added successfully!', 'success')
+            flash('Nowe danie zostało dodane do bazy.', 'success')
         else:
-            flash('Failed to add item.', 'danger')
+            flash('Nie udało się dodać nowego dania do bazy.', 'danger')
 
         return redirect(url_for('menu'))
     else:
@@ -83,7 +83,7 @@ def modify_item(item_id):
             fs.delete(old_image_id)
             fs.put(image, filename=image.filename, _id=old_image_id)
 
-        flash('Item modified successfully!', 'success')
+        flash('Danie zostało zmodyfikowane.', 'success')
         return redirect(url_for('menu'))
     
     return render_template('modify_item_form.html', item=item_data)
@@ -101,11 +101,11 @@ def delete_item(item_id):
 
         if result.deleted_count > 0:
             fs.delete(image_id)
-            flash('Item deleted successfully!', 'success')
+            flash('Danie zostało usunięte.', 'success')
         else:
-            flash('Item could not be deleted.', 'danger')
+            flash('Nie udało się usunąć dania.', 'danger')
     else:
-        flash('Item not found.', 'danger')
+        flash('Nie znaleziono dania.', 'danger')
 
     return redirect(url_for('menu'))
 
@@ -131,9 +131,9 @@ def add_table():
                 {'$set': {'qr_code_image_id': qr_code_image_id}}
             )
 
-            flash('Table added successfully!', 'success')
+            flash('Stół został dodany.', 'success')
         else:
-            flash('Failed to add table.', 'danger')
+            flash('Nie udało się dodać stołu.', 'danger')
 
         return redirect(url_for('table_manager'))
     else:
@@ -154,7 +154,7 @@ def modify_table(table_id):
             }
         })
 
-        flash('Table modified successfully!', 'success')
+        flash('Stół został zmodyfikowany.', 'success')
         return redirect(url_for('table_manager'))
     
     return render_template('modify_table_form.html', table=table_data)
@@ -172,16 +172,13 @@ def delete_table(table_id):
 
         if result.deleted_count > 0:
             fs.delete(qr_code_image_id)
-            flash('Table deleted successfully!', 'success')
+            flash('Stół został usunięty.', 'success')
         else:
-            flash('Table could not be deleted.', 'danger')
+            flash('Nie udało się usunąć stołu.', 'danger')
     else:
-        flash('Table not found.', 'danger')
+        flash('Nie znaleziono stołu.', 'danger')
 
     return redirect(url_for('table_manager'))
-
-### User requests ###
-#TODO
 
 ### Helper methods ###
 def get_menu():
@@ -198,13 +195,20 @@ def get_menu_item(item_id):
     menu_item = MenuItem.from_dict(menu_item_dict)
     return menu_item
 
-def submit_order(order):
+def insert_order(order):
     order_dict = order.to_dict()
-    print(order_dict)
     result = orders_collection.insert_one(order_dict)
     if result.acknowledged:
         return True
     else:
         return False
+
+def insert_service_request(service_request):
+    service_request_dict = service_request.to_dict()
+    result = requests_collection.insert_one(service_request_dict)
+    if result.acknowledged:
+        flash('Prośba została wysłana do obsługi.')
+    else:
+        flash('Nie udało się wysłać prośby do obsługi.')
 
 #TODO: restrict menu items and tables modification during system operating
