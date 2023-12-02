@@ -1,8 +1,8 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session
 from bson import ObjectId
 from database import get_menu_item, submit_order
-from classes import Role, MenuItem, OrderItem
-from authentication import login_required, role_required
+from classes import Role, MenuItem, OrderItem, Order
+from authentication import login_required, role_required, current_user
 import json
 
 session_routes = Blueprint('session_routes', __name__, template_folder='templates')
@@ -15,7 +15,7 @@ def add_to_order(item_id):
         session['order'] = []
 
     menu_item = get_menu_item(item_id)
-    order_item = OrderItem(menu_item=menu_item, count=1, additional_info="")
+    order_item = OrderItem(menu_item=menu_item, count=1, additional_info='')
     order_item_dict = order_item.to_dict()
 
     session['order'].append(order_item_dict)
@@ -81,10 +81,15 @@ def get_current_user_order_info():
 @role_required(Role.USER)
 def place_order():
     if 'order' in session:
-        order = session['order']
+        order_list = session['order']
+        order_items = []
+        for order_item_dict in order_list:
+            order_items.append(OrderItem.from_dict(order_item_dict))
 
-        if order:
-            submit_order(order)
+        order = Order(orderer=current_user, order_items=order_items)
+        
+        result_successful = submit_order(order)
+        if result_successful:
             session['order'] = []
     
     return redirect(url_for('menu'))

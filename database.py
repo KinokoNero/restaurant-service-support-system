@@ -13,12 +13,13 @@ import json
 db_routes = Blueprint('db_routes', __name__, template_folder='templates')
 
 # MongoDB configuration
-mongodb_connection_uri = "mongodb://localhost:27017/r3s"
+mongodb_connection_uri = 'mongodb://localhost:27017/r3s'
 client = MongoClient(mongodb_connection_uri)
-db = client["r3s"]
-users_collection = db["users"]
-menu_collection = db["menu"]
-orders_collection = db["orders"]
+db = client['r3s']
+users_collection = db['users']
+menu_collection = db['menu']
+orders_collection = db['orders']
+requests_collection = db['requests']
 fs = GridFS(db) # For storing images
 
 @db_routes.route('/get-image/<image_id>')
@@ -78,7 +79,7 @@ def modify_item(item_id):
         # Update image if selected in form
         image = request.files['image']
         if image and image.filename != '':
-            old_image_id = ObjectId(item_data.get("image_id"))
+            old_image_id = ObjectId(item_data.get('image_id'))
             fs.delete(old_image_id)
             fs.put(image, filename=image.filename, _id=old_image_id)
 
@@ -116,7 +117,7 @@ def add_table():
     if request.method == 'POST':
         name = request.form['name']
 
-        table = User(id=None, name=name, role=Role.USER)
+        table = User(name=name, role=Role.USER)
         table_dict = table.to_dict()
 
         result = users_collection.insert_one(table_dict)
@@ -171,9 +172,6 @@ def delete_table(table_id):
 
         if result.deleted_count > 0:
             fs.delete(qr_code_image_id)
-            """file_path = f"{qr_codes_directory}/{table_id}.png"
-            if os.path.exists(file_path):
-                os.remove(file_path)"""
             flash('Table deleted successfully!', 'success')
         else:
             flash('Table could not be deleted.', 'danger')
@@ -182,6 +180,8 @@ def delete_table(table_id):
 
     return redirect(url_for('table_manager'))
 
+### User requests ###
+#TODO
 
 ### Helper methods ###
 def get_menu():
@@ -198,5 +198,13 @@ def get_menu_item(item_id):
     menu_item = MenuItem.from_dict(menu_item_dict)
     return menu_item
 
-def submit_order(order): #TODO
-    print(order)
+def submit_order(order):
+    order_dict = order.to_dict()
+    print(order_dict)
+    result = orders_collection.insert_one(order_dict)
+    if result.acknowledged:
+        return True
+    else:
+        return False
+
+#TODO: restrict menu items and tables modification during system operating

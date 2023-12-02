@@ -13,8 +13,6 @@ def generate_qr_code(table_id):
 
     image = qr.make_image(fill_color="black", back_color="white")
     img_bytes_io = BytesIO()
-    image.save(img_bytes_io, format="PNG") # Save as binary data
-    os.makedirs(qr_codes_directory, exist_ok=True)
-    image.save(f"{qr_codes_directory}/{table_id}.png") # Save to disk
+    image.save(img_bytes_io, format="PNG")
 
     return img_bytes_io.getvalue()
