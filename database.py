@@ -1,8 +1,8 @@
 from flask import Blueprint, request, render_template, flash, redirect, url_for, make_response
 from pymongo import MongoClient
 from flask_login import login_required
-from authentication import role_required
-from classes import Role, User, MenuItem
+from authentication import role_required, load_user
+from classes import Role, User, MenuItem, Order, Status
 from qr import qr_codes_directory, generate_qr_code
 from gridfs import GridFS
 from bson import json_util, ObjectId
@@ -180,20 +180,82 @@ def delete_table(table_id):
 
     return redirect(url_for('table_manager'))
 
+### Orders ###
+@db_routes.route('/change-order-status/<order_id>', methods=['POST'])
+@login_required
+@role_required(Role.ADMIN)
+def change_order_status(order_id):
+    order_dict = orders_collection.find_one({'_id': ObjectId(order_id)})
+    order = Order.from_dict(order_dict)
+    
+    order.status = Status(request.form['status'])
+
+    order_dict = order.to_dict()
+    print(order_dict)
+    orders_collection.update_one({'_id': ObjectId(order_id)}, {
+        '$set': order_dict
+    })
+
+    flash('Status zamówienia został zmodyfikowany.', 'success')
+
+    return redirect(url_for('orders_manager'))
+
+@db_routes.route('/delete-order/<order_id>', methods=['POST'])
+@login_required
+@role_required(Role.ADMIN)
+def delete_order(order_id):
+    order_id = ObjectId(order_id)
+    order = orders_collection.find_one({'_id': order_id})
+
+    if order:
+        result = orders_collection.delete_one({'_id': order_id})
+
+        if result.deleted_count > 0:
+            flash('Zamówienie zostało usunięte.', 'success')
+        else:
+            flash('Nie udało się usunąć zamówienia.', 'danger')
+    else:
+        flash('Nie znaleziono zamówienia.', 'danger')
+
+    return redirect(url_for('orders_manager'))
+
 ### Helper methods ###
 def get_menu():
-    return menu_collection.find()
+    menu_dict = menu_collection.find()
+    menu = []
+    for menu_item_dict in menu_dict:
+        menu_item = MenuItem.from_dict(menu_item_dict)
+        menu.append(menu_item)
 
-def get_tables():
-    return users_collection.find({"role": {"$ne": "admin"}})
-
-def get_orders():
-    return orders_collection.find()
+    return menu
 
 def get_menu_item(item_id):
     menu_item_dict = menu_collection.find_one({'_id': ObjectId(item_id)})
     menu_item = MenuItem.from_dict(menu_item_dict)
     return menu_item
+
+def get_user(user_id):
+    return load_user(user_id)
+
+def get_tables():
+    return users_collection.find({"role": {"$ne": "admin"}})
+
+def get_orders():
+    orders_dict = orders_collection.find()
+    orders = []
+    for order_dict in orders_dict:
+        order = Order.from_dict(order_dict)
+        order.orderer = get_user(order.orderer_id)
+        order.price_sum = 0
+        for order_item in order.order_items:
+            menu_item = get_menu_item(order_item.menu_item_id)
+            order_item.menu_item = menu_item
+            order.price_sum = order.price_sum + menu_item.price
+        order.price_sum = round(order.price_sum, 2)
+
+        orders.append(order)
+
+    return orders
 
 def insert_order(order):
     order_dict = order.to_dict()

@@ -92,21 +92,28 @@ class Status(Enum):
     NEW = 'new'
     FINISHED = 'finished'
 
+status_display_strings = {
+    Status.NEW: 'Nowe',
+    Status.FINISHED: 'Zakończone'
+}
+
 class Order: # Represents the whole order for storage in database
-    def __init__(self, orderer_id, order_items, id=None, status=Status.NEW):
+    def __init__(self, orderer_id, order_items, id=None, status=Status.NEW, orderer=None, price_sum=0, timestamp=None):
         self.orderer_id = ObjectId(orderer_id)
 
         if not isinstance(order_items, list) or not all(isinstance(item, OrderItem) for item in order_items):
             raise ValueError("Argument 'order_items' of object Order must be a dictionary of OrderItem objects.")
         self.order_items = order_items
 
-        self.timestamp = datetime.timestamp(datetime.now())
+        self.id = ObjectId(id)
 
         if not isinstance(status, Status):
             raise ValueError("Argument 'status' of object Order must be an instance of Status enum.")
         self.status = status
 
-        self.id = ObjectId(id)
+        self.orderer = orderer
+        self.price_sum = float(price_sum)
+        self.timestamp = datetime.timestamp(datetime.now())
 
     def to_dict(self):
         order_items_dict = []

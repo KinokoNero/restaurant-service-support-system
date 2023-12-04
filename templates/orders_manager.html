@@ -3,6 +3,24 @@
     <head>
         <meta charset="UTF-8">
         <title>Manager zamówień</title>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var statusForms = document.getElementsByClassName("status-form");
+
+                for (var i = 0; i < statusForms.length; i++) {
+                    statusForms[i].addEventListener("change", function() {
+                        var statusForm = event.target;
+                        var orderIndex = parseInt(statusForm.id.match(/\d+/)[0]);
+                        var statusForm = statusForm.closest("form");
+
+                        saveScrollPosition();
+
+                        statusForm.submit();
+                    });
+                }
+            });
+        </script>
     </head>
     <body>
         <div id="admin-panel">
@@ -12,19 +30,38 @@
         <ul>
             {% for order in orders %}
                 <li>
-                    <h2>{{ order.name }}</h2>
-                    <p>{{ item.description }}</p>
-                    <p>Cena: {{ item.price }} zł</p>
-                    <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
-
-                    <form method="GET" action="{{ url_for('db_routes.modify_table', table_id=table._id) }}">
-                        <button type="submit">Edytuj</button>
+                    <h1>Zamówienie {{ loop.index0 + 1 }}</h1>
+                    <h2>ID zamówienia: {{ order.id }}</h2>
+                    <h2>Nazwa stołu: {{ order.orderer.name }}</h3>
+                    <h2>Zamówienie:</h3>
+                    <ul id="order-items">
+                        {% for order_item in order.order_items %}
+                            <li>
+                                <div id="menu-item">
+                                    <h4>{{ order_item.menu_item.name }}</h4> <!--TODO: make this redirect to a single menu item page for lookup-->
+                                    <p>Cena: {{ order_item.menu_item.price }} zł</p>
+                                </div>
+                                <p>Ilość: {{ order_item.count }}</p>
+                                {% if order_item.additional_info and order_item.additional_info.strip() %}
+                                    <p>Dodatkowe uwagi: {{ order_item.additional_info }}</p>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <h2>Suma: {{ order.price_sum }} zł</h2>
+                    <form id="status-form-{{ loop.index0 }}" class="status-form" method="POST" action="{{ url_for('db_routes.change_order_status', order_id=order.id) }}">
+                        <label for="status">Status:</label>
+                        <select name="status" id="status-{{ loop.index0 }}">
+                            {% for status in statuses %}
+                                <option value="{{ status.value }}" {% if status == order.status %}selected{% endif %}>{{ status_display_strings[status] }}</option>
+                            {% endfor %}
+                        </select>
                     </form>
-
-                    <form method="POST" action="{{ url_for('db_routes.delete_table', table_id=table._id) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć ten stół?');">
-                        <button type="submit">Usuń</button>
+                    <form method="POST" action="{{ url_for('db_routes.delete_order', order_id=order.id) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć to zamówienie?');">
+                        <button type="submit">Usuń zamówienie</button>
                     </form>
                 </li>
+                <br>
             {% endfor %}
         </ul>
     </body>

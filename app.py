@@ -1,7 +1,7 @@
 from flask import Flask, render_template, session
 from authentication import auth_routes, login_manager, role_required
-from classes import Role, ServiceRequestType, service_request_type_display_strings
-from database import db_routes, client, get_menu, get_tables
+from classes import Role, ServiceRequestType, service_request_type_display_strings, Status, status_display_strings
+from database import db_routes, client, get_menu, get_tables, get_orders
 from session import session_routes, get_current_user_order_info
 from flask_session import Session
 from flask_login import login_required
@@ -31,6 +31,8 @@ def menu():
     items = get_menu()
     return render_template('menu.html', items=items)
 
+#TODO: add a view for single menu item
+
 @app.route('/table-manager', methods=['GET'])
 @login_required
 @role_required(Role.ADMIN)
@@ -43,14 +45,14 @@ def table_manager():
 @role_required(Role.ADMIN)
 def orders_manager():
     orders = get_orders()
-    return render_template('orders_manager.html', orders=orders)            #TODO: make admin order manager
+    return render_template('orders_manager.html', orders=orders, statuses=Status, status_display_strings=status_display_strings)
 
 @app.route('/current-user-order', methods=['GET'])
 @login_required
 @role_required(Role.USER)
 def current_user_order():
-    order_items, order_sum = get_current_user_order_info()
-    return render_template('current_user_order.html', order_items=order_items, order_sum=order_sum)
+    order_items, price_sum = get_current_user_order_info()
+    return render_template('current_user_order.html', order_items=order_items, price_sum=price_sum)
 
 @app.route('/service-request', methods=['GET'])                             #TODO: add admin requests manager
 @login_required

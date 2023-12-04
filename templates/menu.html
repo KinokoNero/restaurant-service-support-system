@@ -10,9 +10,9 @@
             <form method="POST" action="{{ url_for('auth_routes.logout') }}">
                 <input type="submit" value="Wyloguj">
             </form>
+            <a href="/orders-manager">Manager zamówień</a>
             <a href="/db/add-item">Dodaj danie</a>
             <a href="/table-manager">Manager stołów</a>
-            <a href="/orders-manager">Manager zamówień</a>
         </div>
         {% endif %}
 
@@ -35,21 +35,22 @@
                 <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
 
                 {% if current_user and current_user.role == Role.ADMIN %}
-                <form method="GET" action="{{ url_for('db_routes.modify_item', item_id=item._id) }}">
+                <form method="GET" action="{{ url_for('db_routes.modify_item', item_id=item.id) }}">
                     <button type="submit">Edytuj</button>
                 </form>
 
-                <form method="POST" action="{{ url_for('db_routes.delete_item', item_id=item._id) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć to danie?');">
+                <form method="POST" action="{{ url_for('db_routes.delete_item', item_id=item.id) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć to danie?');">
                     <button type="submit">Usuń</button>
                 </form>
                 {% endif %}
 
                 {% if current_user and current_user.role == Role.USER %}
-                <form method="POST" action="{{ url_for('session_routes.add_to_order', item_id=item._id) }}">
+                <form method="POST" action="{{ url_for('session_routes.add_to_order', item_id=item.id) }}">
                     <input type="submit" value="Dodaj do zamówienia"/>
                 </form>
                 {% endif %}
             </li>
+            <br>
             {% endfor %}
         </ul>
     </body>

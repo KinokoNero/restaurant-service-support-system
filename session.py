@@ -66,17 +66,17 @@ def get_current_user_order_info():
         session['order'] = []
 
     order_items = []
-    order_sum = 0
+    price_sum = 0
 
     for order_item_dict in session['order']:
         order_item = OrderItem.from_dict(order_item_dict)
         order_item.menu_item = get_menu_item(order_item.menu_item_id)
         order_items.append(order_item)
         
-        order_sum = order_sum + order_item.menu_item.price * order_item.count
-        order_sum = round(order_sum, 2)
+        price_sum = price_sum + order_item.menu_item.price * order_item.count
+        price_sum = round(price_sum, 2)
 
-    return order_items, order_sum
+    return order_items, price_sum
 
 @session_routes.route('/place-order', methods=['POST'])
 @login_required
