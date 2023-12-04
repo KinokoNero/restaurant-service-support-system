@@ -105,7 +105,7 @@ status_display_strings = {
 
 
 class Order:  # Represents the whole order for storage in database
-    def __init__(self, orderer_id, order_items, id=None, status=Status.NEW, orderer=None, price_sum=0, timestamp=None):
+    def __init__(self, orderer_id, order_items, id=None, status=Status.NEW, orderer=None, price_sum=0, timestamp=datetime.timestamp(datetime.now())):
         self.orderer_id = ObjectId(orderer_id)
 
         if not isinstance(order_items, list) or not all(isinstance(item, OrderItem) for item in order_items):
@@ -120,7 +120,7 @@ class Order:  # Represents the whole order for storage in database
 
         self.orderer = orderer
         self.price_sum = float(price_sum)
-        self.timestamp = datetime.timestamp(datetime.now())
+        self.timestamp = timestamp
 
     def to_dict(self):
         order_items_dict = []
@@ -169,38 +169,43 @@ service_request_type_display_strings = {
 
 
 class ServiceRequest:
-    def __init__(self, requester_id, request_type, custom_info=None, status=Status.NEW):
+    def __init__(self, requester_id, request_type, id=None, status=Status.NEW, custom_info=None, requester=None):
         self.requester_id = ObjectId(requester_id)
 
         if not isinstance(request_type, ServiceRequestType):
-            raise ValueError("Argument 'request_type' of object UserRequest must be an instance of RequestType enum.")
+            raise ValueError("Argument 'request_type' of object UserRequest must be an instance of ServiceRequestType enum.")
         self.request_type = request_type
+
+        self.id = ObjectId(id)
 
         if not isinstance(status, Status):
             raise ValueError("Argument 'status' of object UserRequest must be an instance of Status enum.")
         self.status = status
 
         self.custom_info = custom_info
+        self.requester = requester
         self.timestamp = datetime.timestamp(datetime.now())
 
     def to_dict(self):
-        user_request_dict = {
-            # 'requester': self.requester.to_dict(),
+        service_request_dict = {
             'requester_id': ObjectId(self.requester_id),
             'request_type': self.request_type.value,
             'status': self.status.value,
             'timestamp': self.timestamp
         }
+        if self.id is not None:
+            service_request_dict['_id'] = ObjectId(self.id)
         if self.custom_info is not None:
-            user_request_dict['custom_info'] = self.custom_info
+            service_request_dict['custom_info'] = self.custom_info
 
-        return user_request_dict
+        return service_request_dict
 
     @classmethod
-    def from_dict(cls, user_request_dict):
+    def from_dict(cls, service_request_dict):
         return cls(
-            requester_id=ObjectId(user_request_dict['requester_id']),
-            request_type=user_request_dict['request_type'],
-            custom_info=user_request_dict.get('custom_info'),
-            status=Status(user_request_dict['status'])
+            requester_id=ObjectId(service_request_dict['requester_id']),
+            request_type=ServiceRequestType(service_request_dict['request_type']),
+            custom_info=service_request_dict.get('custom_info'),
+            status=Status(service_request_dict['status']),
+            id=ObjectId(service_request_dict.get('_id'))
         )

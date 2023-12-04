@@ -5,7 +5,7 @@ from gridfs import GridFS
 from pymongo import MongoClient
 
 from authentication import role_required, load_user
-from classes import Role, User, MenuItem, Order, Status
+from classes import Role, User, MenuItem, Order, Status, ServiceRequest
 from qr import generate_qr_code
 
 db_routes = Blueprint('db_routes', __name__, template_folder='templates')
@@ -197,7 +197,6 @@ def change_order_status(order_id):
     order.status = Status(request.form['status'])
 
     order_dict = order.to_dict()
-    print(order_dict)
     orders_collection.update_one({'_id': ObjectId(order_id)}, {
         '$set': order_dict
     })
@@ -225,6 +224,46 @@ def delete_order(order_id):
         flash('Nie znaleziono zamówienia.', 'danger')
 
     return redirect(url_for('orders_manager'))
+
+
+# Service requests
+@db_routes.route('/change-service-request-status/<service_request_id>', methods=['POST'])
+@login_required
+@role_required(Role.ADMIN)
+def change_service_request_status(service_request_id):
+    service_request_dict = requests_collection.find_one({'_id': ObjectId(service_request_id)})
+    service_request = ServiceRequest.from_dict(service_request_dict)
+
+    service_request.status = Status(request.form['status'])
+
+    service_request_dict = service_request.to_dict()
+    requests_collection.update_one({'_id': ObjectId(service_request_id)}, {
+        '$set': service_request_dict
+    })
+
+    flash('Status prośby został zmodyfikowany.', 'success')
+
+    return redirect(url_for('service_request_manager'))
+
+
+@db_routes.route('/delete-service-request/<service_request_id>', methods=['POST'])
+@login_required
+@role_required(Role.ADMIN)
+def delete_service_request(service_request_id):
+    service_request_id = ObjectId(service_request_id)
+    service_request = requests_collection.find_one({'_id': service_request_id})
+
+    if service_request:
+        result = requests_collection.delete_one({'_id': service_request_id})
+
+        if result.deleted_count > 0:
+            flash('Prośba została usunięta.', 'success')
+        else:
+            flash('Nie udało się usunąć prośby.', 'danger')
+    else:
+        flash('Nie znaleziono prośby.', 'danger')
+
+    return redirect(url_for('service_request_manager'))
 
 
 # Helper methods
@@ -268,6 +307,17 @@ def get_orders():
         orders.append(order)
 
     return orders
+
+
+def get_service_requests():
+    service_requests_dict = requests_collection.find()
+    service_requests = []
+    for service_request_dict in service_requests_dict:
+        service_request = ServiceRequest.from_dict(service_request_dict)
+        service_request.requester = get_user(service_request.requester_id)
+        service_requests.append(service_request)
+
+    return service_requests
 
 
 def insert_order(order):

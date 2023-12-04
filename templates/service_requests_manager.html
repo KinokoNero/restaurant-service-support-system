@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Manager próśb klientów</title>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var statusForms = document.getElementsByClassName("status-form");
+
+                for (var i = 0; i < statusForms.length; i++) {
+                    statusForms[i].addEventListener("change", function() {
+                        var statusForm = event.target;
+                        var orderIndex = parseInt(statusForm.id.match(/\d+/)[0]);
+                        var statusForm = statusForm.closest("form");
+
+                        saveScrollPosition();
+
+                        statusForm.submit();
+                    });
+                }
+            });
+        </script>
+    </head>
+    <body>
+        <div id="admin-panel">
+            <a href="/menu">Wróć do menu</a>
+        </div>
+
+        <ul>
+            {% for service_request in service_requests %}
+                <li>
+                    <h1>Prośba {{ loop.index0 + 1 }}</h1>
+                    <h2>ID prośby: {{ service_request.id }}</h2>
+                    <h2>Nazwa stołu: {{ service_request.requester.name }}</h2>
+                    <h2>Rodzaj prośby: {{ service_request_type_display_strings[service_request.request_type] }}</h2>
+
+                    {% if service_request.request_type == service_request_types.CUSTOM %}
+                        <h3>Dodatkowe informacje prośby: {{ service_request.custom_info }}</h3>
+                    {% endif %}
+
+                    <form id="status-form-{{ loop.index0 }}" class="status-form" method="POST" action="{{ url_for('db_routes.change_service_request_status', service_request_id=service_request.id) }}">
+                        <label for="status-{{ loop.index0 }}">Status:</label>
+                        <select name="status" id="status-{{ loop.index0 }}">
+                            {% for status in statuses %}
+                                <option value="{{ status.value }}" {% if status == service_request.status %}selected{% endif %}>{{ status_display_strings[status] }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('db_routes.delete_service_request', service_request_id=service_request.id) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć tę prośbę?');">
+                        <button type="submit">Usuń prośbę</button>
+                    </form>
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

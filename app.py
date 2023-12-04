@@ -4,7 +4,7 @@ from flask_session import Session
 
 from authentication import auth_routes, login_manager, role_required
 from classes import Role, ServiceRequestType, service_request_type_display_strings, Status, status_display_strings
-from database import db_routes, client, get_menu, get_tables, get_orders
+from database import db_routes, client, get_menu, get_tables, get_orders, get_service_requests
 from session import session_routes, get_current_user_order_info
 
 app = Flask(__name__, static_url_path='/static')
@@ -61,12 +61,23 @@ def current_user_order():
     return render_template('current_user_order.html', order_items=order_items, price_sum=price_sum)
 
 
-@app.route('/service-request', methods=['GET'])  # TODO: add admin requests manager
+@app.route('/service-request', methods=['GET'])
 @login_required
 @role_required(Role.USER)
 def service_request():
     return render_template('service_request_form.html', service_request_types=ServiceRequestType,
                            service_request_type_display_strings=service_request_type_display_strings)
+
+
+@app.route('/service-request-manager', methods=['GET'])
+@login_required
+@role_required(Role.ADMIN)
+def service_request_manager():
+    service_requests = get_service_requests()
+    return render_template('service_requests_manager.html', service_requests=service_requests,
+                           service_request_types=ServiceRequestType,
+                           service_request_type_display_strings=service_request_type_display_strings, statuses=Status,
+                           status_display_strings=status_display_strings)
 
 
 if __name__ == '__main__':
