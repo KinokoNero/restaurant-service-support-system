@@ -1,14 +1,12 @@
+from bson import ObjectId
 from flask import Blueprint, request, render_template, flash, redirect, url_for, make_response
-from pymongo import MongoClient
 from flask_login import login_required
+from gridfs import GridFS
+from pymongo import MongoClient
+
 from authentication import role_required, load_user
 from classes import Role, User, MenuItem, Order, Status
-from qr import qr_codes_directory, generate_qr_code
-from gridfs import GridFS
-from bson import json_util, ObjectId
-from flask_session import Session
-import os
-import json
+from qr import generate_qr_code
 
 db_routes = Blueprint('db_routes', __name__, template_folder='templates')
 
@@ -20,7 +18,8 @@ users_collection = db['users']
 menu_collection = db['menu']
 orders_collection = db['orders']
 requests_collection = db['requests']
-fs = GridFS(db) # For storing images
+fs = GridFS(db)  # For storing images
+
 
 @db_routes.route('/get-image/<image_id>')
 def get_image(image_id):
@@ -29,7 +28,8 @@ def get_image(image_id):
     response.headers['Content-Type'] = 'image/jpeg'
     return response
 
-### Menu items ###
+
+# Menu items
 @db_routes.route('/add-item', methods=['GET', 'POST'])
 @login_required
 @role_required(Role.ADMIN)
@@ -55,23 +55,24 @@ def add_item():
     else:
         return render_template('add_item_form.html')
 
+
 @db_routes.route('/modify-item/<item_id>', methods=['GET', 'POST'])
 @login_required
 @role_required(Role.ADMIN)
 def modify_item(item_id):
     item_id = ObjectId(item_id)
     item_data = menu_collection.find_one({'_id': item_id})
-    
+
     if request.method == 'POST':
         menu_item = MenuItem.from_dict(item_data)
 
         menu_item.name = request.form['name']
         menu_item.description = request.form['description']
         menu_item.price = request.form['price']
-        
+
         menu_item_dict = menu_item.to_dict()
-        menu_item_dict.pop('_id') # Remove id for update
-        
+        menu_item_dict.pop('_id')  # Remove id for update
+
         menu_collection.update_one({'_id': item_id}, {
             '$set': menu_item_dict
         })
@@ -85,8 +86,9 @@ def modify_item(item_id):
 
         flash('Danie zostało zmodyfikowane.', 'success')
         return redirect(url_for('menu'))
-    
+
     return render_template('modify_item_form.html', item=item_data)
+
 
 @db_routes.route('/delete-item/<item_id>', methods=['POST'])
 @login_required
@@ -109,7 +111,8 @@ def delete_item(item_id):
 
     return redirect(url_for('menu'))
 
-### Tables ###
+
+# Tables
 @db_routes.route('/add-table', methods=['GET', 'POST'])
 @login_required
 @role_required(Role.ADMIN)
@@ -139,12 +142,13 @@ def add_table():
     else:
         return render_template('add_table_form.html')
 
+
 @db_routes.route('/modify-table/<table_id>', methods=['GET', 'POST'])
 @login_required
 @role_required(Role.ADMIN)
 def modify_table(table_id):
     table_data = users_collection.find_one({'_id': ObjectId(table_id)})
-    
+
     if request.method == 'POST':
         name = request.form['name']
 
@@ -156,8 +160,9 @@ def modify_table(table_id):
 
         flash('Stół został zmodyfikowany.', 'success')
         return redirect(url_for('table_manager'))
-    
+
     return render_template('modify_table_form.html', table=table_data)
+
 
 @db_routes.route('/delete-table/<table_id>', methods=['POST'])
 @login_required
@@ -180,14 +185,15 @@ def delete_table(table_id):
 
     return redirect(url_for('table_manager'))
 
-### Orders ###
+
+# Orders
 @db_routes.route('/change-order-status/<order_id>', methods=['POST'])
 @login_required
 @role_required(Role.ADMIN)
 def change_order_status(order_id):
     order_dict = orders_collection.find_one({'_id': ObjectId(order_id)})
     order = Order.from_dict(order_dict)
-    
+
     order.status = Status(request.form['status'])
 
     order_dict = order.to_dict()
@@ -199,6 +205,7 @@ def change_order_status(order_id):
     flash('Status zamówienia został zmodyfikowany.', 'success')
 
     return redirect(url_for('orders_manager'))
+
 
 @db_routes.route('/delete-order/<order_id>', methods=['POST'])
 @login_required
@@ -219,7 +226,8 @@ def delete_order(order_id):
 
     return redirect(url_for('orders_manager'))
 
-### Helper methods ###
+
+# Helper methods
 def get_menu():
     menu_dict = menu_collection.find()
     menu = []
@@ -229,16 +237,20 @@ def get_menu():
 
     return menu
 
+
 def get_menu_item(item_id):
     menu_item_dict = menu_collection.find_one({'_id': ObjectId(item_id)})
     menu_item = MenuItem.from_dict(menu_item_dict)
     return menu_item
 
+
 def get_user(user_id):
     return load_user(user_id)
 
+
 def get_tables():
     return users_collection.find({"role": {"$ne": "admin"}})
+
 
 def get_orders():
     orders_dict = orders_collection.find()
@@ -257,6 +269,7 @@ def get_orders():
 
     return orders
 
+
 def insert_order(order):
     order_dict = order.to_dict()
     result = orders_collection.insert_one(order_dict)
@@ -264,6 +277,7 @@ def insert_order(order):
         return True
     else:
         return False
+
 
 def insert_service_request(service_request):
     service_request_dict = service_request.to_dict()
@@ -273,4 +287,4 @@ def insert_service_request(service_request):
     else:
         flash('Nie udało się wysłać prośby do obsługi.')
 
-#TODO: restrict menu items and tables modification during system operating
+# TODO: restrict menu items and tables modification during system operating

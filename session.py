@@ -1,13 +1,13 @@
-from flask import Blueprint, request, render_template, redirect, url_for, flash, session
-from bson import ObjectId
-from database import get_menu_item, insert_order, insert_service_request
-from classes import Role, MenuItem, OrderItem, Order, ServiceRequestType, ServiceRequest
+from flask import Blueprint, request, redirect, url_for, session
+
 from authentication import login_required, role_required, current_user
-import json
+from classes import Role, OrderItem, Order, ServiceRequestType, ServiceRequest
+from database import get_menu_item, insert_order, insert_service_request
 
 session_routes = Blueprint('session_routes', __name__, template_folder='templates')
 
-### Order ###
+
+# Order
 @session_routes.route('/add-to-order/<item_id>', methods=['POST'])
 @login_required
 @role_required(Role.USER)
@@ -28,6 +28,7 @@ def add_to_order(item_id):
     else:
         return redirect(url_for('menu'))
 
+
 @session_routes.route('/remove-from-order/<item_index>', methods=['POST'])
 @login_required
 @role_required(Role.USER)
@@ -41,6 +42,7 @@ def remove_from_order(item_index):
         session['order'] = order
 
     return redirect(url_for('current_user_order'))
+
 
 @session_routes.route('/update-order-item/<item_index>', methods=['POST'])
 @login_required
@@ -61,6 +63,7 @@ def update_order_item(item_index):
 
     return redirect(url_for('current_user_order'))
 
+
 def get_current_user_order_info():
     if 'order' not in session:
         session['order'] = []
@@ -72,16 +75,17 @@ def get_current_user_order_info():
         order_item = OrderItem.from_dict(order_item_dict)
         order_item.menu_item = get_menu_item(order_item.menu_item_id)
         order_items.append(order_item)
-        
+
         price_sum = price_sum + order_item.menu_item.price * order_item.count
         price_sum = round(price_sum, 2)
 
     return order_items, price_sum
 
+
 @session_routes.route('/place-order', methods=['POST'])
 @login_required
 @role_required(Role.USER)
-def place_order():                      #TODO: collapse multiple separate identical menu items into a single one with approporiate count value
+def place_order():  # TODO: collapse multiple separate identical menu items into a single one with approporiate count value
     if 'order' in session:
         order_list = session['order']
         order_items = []
@@ -89,14 +93,15 @@ def place_order():                      #TODO: collapse multiple separate identi
             order_items.append(OrderItem.from_dict(order_item_dict))
 
         order = Order(orderer_id=current_user.id, order_items=order_items)
-        
+
         result_successful = insert_order(order)
         if result_successful:
             session['order'] = []
-    
+
     return redirect(url_for('menu'))
 
-### User requests ###
+
+# User requests
 @session_routes.route('/submit-service-request', methods=['POST'])
 @login_required
 @role_required(Role.USER)

@@ -3,9 +3,11 @@ from bson import ObjectId
 from flask_login import UserMixin
 from datetime import datetime
 
+
 class Role(Enum):
     ADMIN = 'admin'
     USER = 'user'
+
 
 class User(UserMixin):
     def __init__(self, name, role, id=None, qr_code_image_id=None):
@@ -37,7 +39,8 @@ class User(UserMixin):
             qr_code_image_id=ObjectId(user_dict.get('qr_code_image_id'))
         )
 
-class MenuItem: # Represents a single menu item stored in database
+
+class MenuItem:  # Represents a single menu item stored in database
     def __init__(self, name, description, price, image_id, id=None):
         self.name = name
         self.description = description
@@ -67,7 +70,8 @@ class MenuItem: # Represents a single menu item stored in database
             id=ObjectId(menu_item_dict.get('_id'))
         )
 
-class OrderItem: # Represents a single order item stored in session
+
+class OrderItem:  # Represents a single order item stored in session
     def __init__(self, menu_item_id, count, additional_info, menu_item=None):
         self.menu_item_id = ObjectId(menu_item_id)
         self.count = count
@@ -88,16 +92,19 @@ class OrderItem: # Represents a single order item stored in session
             additional_info=str(order_item_dict['additional_info']),
         )
 
+
 class Status(Enum):
     NEW = 'new'
     FINISHED = 'finished'
+
 
 status_display_strings = {
     Status.NEW: 'Nowe',
     Status.FINISHED: 'Zakończone'
 }
 
-class Order: # Represents the whole order for storage in database
+
+class Order:  # Represents the whole order for storage in database
     def __init__(self, orderer_id, order_items, id=None, status=Status.NEW, orderer=None, price_sum=0, timestamp=None):
         self.orderer_id = ObjectId(orderer_id)
 
@@ -147,16 +154,19 @@ class Order: # Represents the whole order for storage in database
             id=ObjectId(order_dict.get('_id'))
         )
 
+
 class ServiceRequestType(Enum):
     CHECK = 'check'
     HELP = 'help'
     CUSTOM = 'custom'
+
 
 service_request_type_display_strings = {
     ServiceRequestType.CHECK: 'Prośba o rachunek',
     ServiceRequestType.HELP: 'Prośba o pomoc',
     ServiceRequestType.CUSTOM: 'Prośba niestandardowa'
 }
+
 
 class ServiceRequest:
     def __init__(self, requester_id, request_type, custom_info=None, status=Status.NEW):
@@ -175,7 +185,7 @@ class ServiceRequest:
 
     def to_dict(self):
         user_request_dict = {
-            #'requester': self.requester.to_dict(),
+            # 'requester': self.requester.to_dict(),
             'requester_id': ObjectId(self.requester_id),
             'request_type': self.request_type.value,
             'status': self.status.value,
