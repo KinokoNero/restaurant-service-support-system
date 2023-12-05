@@ -16,7 +16,7 @@ def add_to_order(item_id):
         session['order'] = []
 
     menu_item = get_menu_item(item_id)
-    order_item = OrderItem(menu_item_id=item_id, count=1, additional_info='')
+    order_item = OrderItem(menu_item=menu_item, count=1, additional_info='')
     order_item_dict = order_item.to_dict()
 
     session['order'].append(order_item_dict)
@@ -55,8 +55,8 @@ def update_order_item(item_index):
         order_item_dict = order[item_index]
         order_item = OrderItem.from_dict(order_item_dict)
 
-        order_item.count = request.form['item-count']
-        order_item.additional_info = request.form['additional-info']
+        order_item.count = request.form.get('item-count', order_item.count)
+        order_item.additional_info = request.form.get('additional-info', order_item.additional_info)
 
         order_item_dict = order_item.to_dict()
         session['order'][item_index] = order_item_dict
@@ -73,7 +73,6 @@ def get_current_user_order_info():
 
     for order_item_dict in session['order']:
         order_item = OrderItem.from_dict(order_item_dict)
-        order_item.menu_item = get_menu_item(order_item.menu_item_id)
         order_items.append(order_item)
 
         price_sum = price_sum + order_item.menu_item.price * order_item.count
@@ -92,7 +91,7 @@ def place_order():  # TODO: collapse multiple separate identical menu items into
         for order_item_dict in order_list:
             order_items.append(OrderItem.from_dict(order_item_dict))
 
-        order = Order(orderer_id=current_user.id, order_items=order_items)
+        order = Order(orderer=current_user, order_items=order_items)
 
         result_successful = insert_order(order)
         if result_successful:
@@ -107,7 +106,7 @@ def place_order():  # TODO: collapse multiple separate identical menu items into
 @role_required(Role.USER)
 def submit_service_request():
     request_type = ServiceRequestType(request.form['request-type'])
-    service_request = ServiceRequest(requester_id=current_user.id, request_type=request_type)
+    service_request = ServiceRequest(requester=current_user, request_type=request_type)
 
     if request_type == ServiceRequestType.CUSTOM:
         service_request.custom_info = request.form['custom-info']

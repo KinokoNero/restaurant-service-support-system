@@ -10,23 +10,35 @@
             <a href="/db/add-table">Dodaj stół</a>
         </div>
 
-        <ul>
-            {% for table in tables %}
-                <li>
-                    <h2>Nazwa: {{ table.name }}</h2>
-                    <p>ID: {{ table._id }}</p>
-                    <img src="{{ url_for('db_routes.get_image', image_id=table.qr_code_image_id) }}">
-
-                    <form method="GET" action="{{ url_for('db_routes.modify_table', table_id=table._id) }}">
-                        <button type="submit">Edytuj</button>
-                    </form>
-
-                    <form method="POST" action="{{ url_for('db_routes.delete_table', table_id=table._id) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć ten stół?');">
-                        <button type="submit">Usuń</button>
-                    </form>
-                </li>
-                <br>
-            {% endfor %}
-        </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nazwa</th>
+                    <th>Kod QR</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for table in tables %}
+                    <tr>
+                        <td>{{ table.id }}</td>
+                        <td>{{ table.name }}</td>
+                        <td>
+                            <a href="{{ url_for('db_routes.get_image', image_id=table.qr_code_image_id) }}" download="qr_{{ table.id }}.png">Pobierz</a>
+                        </td>
+                        <td>
+                            <form method="GET" action="{{ url_for('db_routes.modify_table', table_id=table.id) }}">
+                                <button type="submit">Edytuj</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('db_routes.delete_table', table_id=table.id) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć ten stół?');">
+                                <button type="submit">Usuń</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </body>
 </html>

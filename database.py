@@ -288,7 +288,12 @@ def get_user(user_id):
 
 
 def get_tables():
-    return users_collection.find({"role": {"$ne": "admin"}})
+    tables_dict = users_collection.find({"role": {"$ne": "admin"}})
+    tables = []
+    for table_dict in tables_dict:
+        tables.append(User.from_dict(table_dict))
+
+    return tables
 
 
 def get_orders():
@@ -296,12 +301,9 @@ def get_orders():
     orders = []
     for order_dict in orders_dict:
         order = Order.from_dict(order_dict)
-        order.orderer = get_user(order.orderer_id)
-        order.price_sum = 0
+        # order.price_sum = 0
         for order_item in order.order_items:
-            menu_item = get_menu_item(order_item.menu_item_id)
-            order_item.menu_item = menu_item
-            order.price_sum = order.price_sum + menu_item.price
+            order.price_sum = order.price_sum + order_item.menu_item.price
         order.price_sum = round(order.price_sum, 2)
 
         orders.append(order)
@@ -314,7 +316,6 @@ def get_service_requests():
     service_requests = []
     for service_request_dict in service_requests_dict:
         service_request = ServiceRequest.from_dict(service_request_dict)
-        service_request.requester = get_user(service_request.requester_id)
         service_requests.append(service_request)
 
     return service_requests
@@ -336,5 +337,3 @@ def insert_service_request(service_request):
         flash('Prośba została wysłana do obsługi.')
     else:
         flash('Nie udało się wysłać prośby do obsługi.')
-
-# TODO: restrict menu items and tables modification during system operating

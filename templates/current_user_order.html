@@ -6,33 +6,27 @@
         <script src="{{ url_for('static', filename='script.js') }}"></script>
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                var orderInfoForms = document.getElementsByClassName("order-info-form");
+                var itemCountForms = document.getElementsByClassName("item-count-form");
+                var additionalInfoForms = document.getElementsByClassName("additional-info-form");
                 var itemCountInputs = document.getElementsByClassName("item-count");
-                var additionalInfoTextareas = document.getElementsByClassName('additional-info');
+                var additionalInfoTextAreas = document.getElementsByClassName('additional-info');
 
                 for (var i = 0; i < itemCountInputs.length; i++) {
                     itemCountInputs[i].addEventListener("change", function() {
                         var itemCountInput = event.target;
-                        var itemIndex = parseInt(itemCountInput.id.match(/\d+/)[0]);
-                        var orderInfoForm = itemCountInput.closest("form");
-                        
+                        var closestForm = itemCountInput.closest("form");
                         itemCountInput.value = Math.max(1, Math.round(Number(itemCountInput.value)));
-
                         saveScrollPosition();
-                        
-                        orderInfoForm.submit();
+                        closestForm.submit();
                     });
                 }
 
-                for (var i = 0; i < additionalInfoTextareas.length; i++) {
-                    additionalInfoTextareas[i].addEventListener("change", function() {
+                for (var i = 0; i < additionalInfoTextAreas.length; i++) {
+                    additionalInfoTextAreas[i].addEventListener("change", function() {
                         var additionalInfoTextarea = event.target;
-                        var itemIndex = parseInt(additionalInfoTextarea.id.match(/\d+/)[0]);
-                        var orderInfoForm = additionalInfoTextarea.closest("form");
-
+                        var closestForm = additionalInfoTextarea.closest("form");
                         saveScrollPosition();
-
-                        orderInfoForm.submit();
+                        closestForm.submit();
                     });
                 }
             });
@@ -43,36 +37,50 @@
             <a href="/menu">Wróć do menu</a>
         </div>
 
-        <ul id="order-items">
-            {% set index = 0 %}
-            {% for order_item in order_items %}
-            <li id="order-item-{{ loop.index0 }}" class="order-item">
-                <h2>{{ order_item.menu_item.name }}</h2>
-                <p>{{ order_item.menu_item.description }}</p>
-                <p>Cena: {{ order_item.menu_item.price }} zł</p>
-                <img src="{{ url_for('db_routes.get_image', image_id=order_item.menu_item.image_id) }}">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nazwa</th>
+                    <th>Opis</th>
+                    <th>Cena (zł)</th>
+                    <th>Zdjęcie</th>
+                    <th>Ilość</th>
+                    <th>Dodatkowe informacje</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order_item in order_items %}
+                    <tr>
+                        <td>{{ order_item.menu_item.name }}</td>
+                        <td>{{ order_item.menu_item.description }}</td>
+                        <td>{{ "{:.2f}".format(order_item.menu_item.price) }}</td>
+                        <td><img src="{{ url_for('db_routes.get_image', image_id=order_item.menu_item.image_id) }}"></td>
+                        <td>
+                            <form class="order-info-form" method="POST" action="{{ url_for('session_routes.update_order_item', item_index=loop.index0) }}">
+                                <input type="number" class="item-count" name="item-count" value="{{ order_item.count }}" step="1" min="1"/>
+                            </form>
+                        </td>
+                        <td>
+                            <form class="additional-info-form" method="POST" action="{{ url_for('session_routes.update_order_item', item_index=loop.index0) }}">
+                                <textarea class="additional-info" name="additional-info" rows="2">{{ order_item.additional_info }}</textarea>
+                            </form>
+                        </td>
+                        <td>
+                            <form id="delete-form" method="POST" action="{{ url_for('session_routes.remove_from_order', item_index=loop.index0) }}">
+                                <button type="submit" onclick="saveScrollPosition()">Usuń</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-                <form id="order-info-form-{{ loop.index0 }}" class="order-info-form" method="POST" action="{{ url_for('session_routes.update_order_item', item_index=loop.index0) }}">
-                    <label for="item-count">Ilość:</label>
-                    <input type="number" id="item-count-{{ loop.index0 }}" class="item-count" name="item-count" value="{{ order_item.count }}" step="1" min="1"/>
+        <h3>Suma: {{ "{:.2f}".format(price_sum) }} zł</h3>
 
-                    <label for="additional-info">Dodatkowe informacje:</label>
-                    <textarea id="additional-info-{{ loop.index0 }}" class="additional-info" name="additional-info" rows="2">{{ order_item.additional_info }}</textarea>
-                </form>
-
-                <form id="delete-form" method="POST" action="{{ url_for('session_routes.remove_from_order', item_index=loop.index0) }}">
-                    <button type="submit" onclick="saveScrollPosition()">Usuń</button>
-                </form>
-            </li>
-            {% set index = index + 1 %}
-            {% endfor %}
-        </ul>
         {% if order_items %}
         <form method="POST" action="{{ url_for('session_routes.place_order') }}">
             <button type="submit">Złóż zamówienie</button>
         </form>
         {% endif %}
-
-        <h3>Suma: {{ price_sum }} zł</h3>
     </body>
 </html>

@@ -72,14 +72,16 @@ class MenuItem:  # Represents a single menu item stored in database
 
 
 class OrderItem:  # Represents a single order item stored in session
-    def __init__(self, menu_item_id, count, additional_info, menu_item=None):
-        self.menu_item_id = ObjectId(menu_item_id)
+    def __init__(self, menu_item, count, additional_info):
+        if not isinstance(menu_item, MenuItem):
+            raise ValueError("Argument 'menu_item' of OrderItem class object must be an instance of MenuItem class.")
+        self.menu_item = menu_item
         self.count = count
         self.additional_info = additional_info
 
     def to_dict(self):
         return {
-            'menu_item_id': ObjectId(self.menu_item_id),
+            'menu_item': self.menu_item.to_dict(),
             'count': int(self.count),
             'additional_info': str(self.additional_info)
         }
@@ -87,7 +89,7 @@ class OrderItem:  # Represents a single order item stored in session
     @classmethod
     def from_dict(cls, order_item_dict):
         return cls(
-            menu_item_id=ObjectId(order_item_dict['menu_item_id']),
+            menu_item=MenuItem.from_dict(order_item_dict['menu_item']),
             count=int(order_item_dict['count']),
             additional_info=str(order_item_dict['additional_info']),
         )
@@ -105,20 +107,21 @@ status_display_strings = {
 
 
 class Order:  # Represents the whole order for storage in database
-    def __init__(self, orderer_id, order_items, id=None, status=Status.NEW, orderer=None, price_sum=0, timestamp=datetime.timestamp(datetime.now())):
-        self.orderer_id = ObjectId(orderer_id)
+    def __init__(self, orderer, order_items, id=None, status=Status.NEW, price_sum=0, timestamp=datetime.timestamp(datetime.now())):
+        if not isinstance(orderer, User):
+            raise ValueError("Argument 'orderer' of Order class object must be an instance of User class.")
+        self.orderer = orderer
 
         if not isinstance(order_items, list) or not all(isinstance(item, OrderItem) for item in order_items):
-            raise ValueError("Argument 'order_items' of object Order must be a dictionary of OrderItem objects.")
+            raise ValueError("Argument 'order_items' of Order class object must be a dictionary of OrderItem objects.")
         self.order_items = order_items
 
         self.id = ObjectId(id)
 
         if not isinstance(status, Status):
-            raise ValueError("Argument 'status' of object Order must be an instance of Status enum.")
+            raise ValueError("Argument 'status' of Order class object must be an instance of Status enum.")
         self.status = status
 
-        self.orderer = orderer
         self.price_sum = float(price_sum)
         self.timestamp = timestamp
 
@@ -128,7 +131,7 @@ class Order:  # Represents the whole order for storage in database
             order_items_dict.append(order_item.to_dict())
 
         order_dict = {
-            'orderer_id': ObjectId(self.orderer_id),
+            'orderer': self.orderer.to_dict(),
             'order_items': order_items_dict,
             'timestamp': self.timestamp,
             'status': self.status.value
@@ -147,7 +150,7 @@ class Order:  # Represents the whole order for storage in database
             order_items.append(order_item)
 
         return cls(
-            orderer_id=order_dict['orderer_id'],
+            orderer=User.from_dict(order_dict['orderer']),
             order_items=order_items,
             timestamp=order_dict['timestamp'],
             status=Status(order_dict['status']),
@@ -169,11 +172,13 @@ service_request_type_display_strings = {
 
 
 class ServiceRequest:
-    def __init__(self, requester_id, request_type, id=None, status=Status.NEW, custom_info=None, requester=None):
-        self.requester_id = ObjectId(requester_id)
+    def __init__(self, requester, request_type, id=None, status=Status.NEW, custom_info=None):
+        if not isinstance(requester, User):
+            raise ValueError("Argument 'requester' of UserRequest class object must be an instance of User class.")
+        self.requester = requester
 
         if not isinstance(request_type, ServiceRequestType):
-            raise ValueError("Argument 'request_type' of object UserRequest must be an instance of ServiceRequestType enum.")
+            raise ValueError("Argument 'request_type' of UserRequest class object must be an instance of ServiceRequestType enum.")
         self.request_type = request_type
 
         self.id = ObjectId(id)
@@ -183,12 +188,11 @@ class ServiceRequest:
         self.status = status
 
         self.custom_info = custom_info
-        self.requester = requester
         self.timestamp = datetime.timestamp(datetime.now())
 
     def to_dict(self):
         service_request_dict = {
-            'requester_id': ObjectId(self.requester_id),
+            'requester': self.requester.to_dict(),
             'request_type': self.request_type.value,
             'status': self.status.value,
             'timestamp': self.timestamp
@@ -203,7 +207,7 @@ class ServiceRequest:
     @classmethod
     def from_dict(cls, service_request_dict):
         return cls(
-            requester_id=ObjectId(service_request_dict['requester_id']),
+            requester=User.from_dict(service_request_dict['requester']),
             request_type=ServiceRequestType(service_request_dict['request_type']),
             custom_info=service_request_dict.get('custom_info'),
             status=Status(service_request_dict['status']),
