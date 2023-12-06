@@ -1,17 +1,45 @@
-<form method="POST" action="{{ url_for('db_routes.modify_item', item_id=item._id) }}" enctype="multipart/form-data">
-    <label for="name">Nazwa:</label>
-    <input type="text" id="name" name="name" value="{{ item.name }}" required><br>
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <title>Modyfikuj danie</title>
+    </head>
+    <body class="bg-light">
+        <nav class="navbar navbar-light bg-light">
+            <div class="container">
+                <a class="nav-link" href="/menu">Wróć do menu</a>
+            </div>
+        </nav>
 
-    <label for="description">Opis:</label>
-    <textarea id="description" name="description" rows="2" required>{{ item.description }}</textarea><br>
+        <div class="container mt-4">
+            <form method="POST" action="{{ url_for('db_routes.modify_item', item_id=item._id) }}" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nazwa:</label>
+                    <input type="text" id="name" name="name" value="{{ item.name }}" class="form-control" required>
+                </div>
 
-    <label for="price">Cena:</label>
-    <input type="number" id="price" name="price" step="0.01" value="{{ item.price }}" required><br>
-    
-    <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
+                <div class="mb-3">
+                    <label for="description" class="form-label">Opis:</label>
+                    <textarea id="description" name="description" rows="2" class="form-control" required>{{ item.description }}</textarea>
+                </div>
 
-    <label for="image">Zmień obraz:</label>
-    <input type="file" id="image" name="image" accept="image/*"><br>
+                <div class="mb-3">
+                    <label for="price" class="form-label">Cena:</label>
+                    <input type="number" id="price" name="price" step="0.01" value="{{ item.price }}" class="form-control" required>
+                </div>
 
-    <button type="submit">Zapisz</button>
-</form>
+                <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}" class="img-fluid rounded mb-3" alt="Current Image">
+
+                <div class="mb-3">
+                    <label for="image" class="form-label">Zmień obraz:</label>
+                    <input type="file" id="image" name="image" accept="image/*" class="form-control-file">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Zapisz</button>
+            </form>
+        </div>
+    </body>
+</html>

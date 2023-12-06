@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function() {
     restoreScrollPosition();
 });
 
-const scrollDelay = 100; //ms
+const scrollDelay = 50; //ms
 
 function saveScrollPosition() {
     localStorage.setItem('scrollPositionX', window.scrollX);
