@@ -114,3 +114,41 @@ def submit_service_request():
     insert_service_request(service_request)
 
     return redirect(url_for('menu'))
+
+
+@session_routes.route('/toggle-include-finished-orders', methods=['POST'])
+@login_required
+@role_required(Role.ADMIN)
+def toggle_include_finished_orders():
+    if 'include_finished_orders' not in session:
+        session['include_finished_orders'] = False
+
+    session['include_finished_orders'] = not session['include_finished_orders']
+
+    return redirect(url_for('orders_manager'))
+
+
+def get_include_finished_orders():
+    if 'include_finished_orders' in session:
+        return session['include_finished_orders']
+    else:
+        return False
+
+
+@session_routes.route('/toggle-include-finished-service-requests', methods=['POST'])
+@login_required
+@role_required(Role.ADMIN)
+def toggle_include_finished_service_requests():
+    if 'include_finished_service_requests' not in session:
+        session['include_finished_service_requests'] = False
+
+    session['include_finished_service_requests'] = not session['include_finished_service_requests']
+
+    return redirect(url_for('service_requests_manager'))
+
+
+def get_include_finished_service_requests():
+    if 'include_finished_service_requests' in session:
+        return session['include_finished_service_requests']
+    else:
+        return False

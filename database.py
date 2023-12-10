@@ -243,7 +243,7 @@ def change_service_request_status(service_request_id):
 
     flash('Status prośby został zmodyfikowany.', 'success')
 
-    return redirect(url_for('service_request_manager'))
+    return redirect(url_for('service_requests_manager'))
 
 
 @db_routes.route('/delete-service-request/<service_request_id>', methods=['POST'])
@@ -263,7 +263,7 @@ def delete_service_request(service_request_id):
     else:
         flash('Nie znaleziono prośby.', 'danger')
 
-    return redirect(url_for('service_request_manager'))
+    return redirect(url_for('service_requests_manager'))
 
 
 # Helper methods
@@ -296,12 +296,15 @@ def get_tables():
     return tables
 
 
-def get_orders():
+def get_orders(include_finished=False):
     orders_dict = orders_collection.find()
     orders = []
     for order_dict in orders_dict:
         order = Order.from_dict(order_dict)
-        # order.price_sum = 0
+
+        if not include_finished and order.status == Status.FINISHED:
+            continue
+
         for order_item in order.order_items:
             order.price_sum = order.price_sum + order_item.menu_item.price
         order.price_sum = round(order.price_sum, 2)
@@ -311,11 +314,15 @@ def get_orders():
     return orders
 
 
-def get_service_requests():
+def get_service_requests(include_finished=False):
     service_requests_dict = requests_collection.find()
     service_requests = []
     for service_request_dict in service_requests_dict:
         service_request = ServiceRequest.from_dict(service_request_dict)
+
+        if not include_finished and service_request.status == Status.FINISHED:
+            continue
+
         service_requests.append(service_request)
 
     return service_requests

@@ -5,7 +5,7 @@ from flask_session import Session
 from authentication import auth_routes, login_manager, role_required
 from classes import Role, ServiceRequestType, service_request_type_display_strings, Status, status_display_strings
 from database import db_routes, client, get_menu, get_tables, get_orders, get_service_requests
-from session import session_routes, get_current_user_order_info
+from session import session_routes, get_current_user_order_info, get_include_finished_orders, get_include_finished_service_requests
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'c9383efdbb41c23072b029ecc4789e36'
@@ -48,7 +48,8 @@ def table_manager():
 @login_required
 @role_required(Role.ADMIN)
 def orders_manager():
-    orders = get_orders()
+    include_finished_orders = get_include_finished_orders()
+    orders = get_orders(include_finished_orders)
     return render_template('orders_manager.html', orders=orders, statuses=Status,
                            status_display_strings=status_display_strings)
 
@@ -69,11 +70,12 @@ def service_request():
                            service_request_type_display_strings=service_request_type_display_strings)
 
 
-@app.route('/service-request-manager', methods=['GET'])
+@app.route('/service-requests-manager', methods=['GET'])
 @login_required
 @role_required(Role.ADMIN)
-def service_request_manager():
-    service_requests = get_service_requests()
+def service_requests_manager():
+    include_finished_service_requests = get_include_finished_service_requests()
+    service_requests = get_service_requests(include_finished_service_requests)
     return render_template('service_requests_manager.html', service_requests=service_requests,
                            service_request_types=ServiceRequestType,
                            service_request_type_display_strings=service_request_type_display_strings, statuses=Status,

@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener('DOMContentLoaded', function() {
     const serviceRequestTypeDropdown = document.getElementById('request-type');
     const customInfoLabel = document.getElementById('custom-info-label');
     const customInfoTextarea = document.getElementById('custom-info');

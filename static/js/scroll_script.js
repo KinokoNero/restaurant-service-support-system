@@ -1,7 +1,3 @@
-document.addEventListener("DOMContentLoaded", function() {
-    restoreScrollPosition();
-});
-
 const scrollDelay = 50; //ms
 
 function saveScrollPosition() {
@@ -20,3 +16,7 @@ function restoreScrollPosition() {
         localStorage.removeItem('scrollPositionY');
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    restoreScrollPosition();
+});

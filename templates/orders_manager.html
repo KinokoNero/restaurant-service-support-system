@@ -17,6 +17,15 @@
         </nav>
 
         <div class="container mt-4">
+            <div class="mb-4">
+                <form id="include-finished-orders-form" method="POST" action="{{ url_for('session_routes.toggle_include_finished_orders') }}">
+                    <div class="form-check">
+                        <label class="form-check-label" for="include-finished-orders-checkbox">Pokaż zakończone zamówienia</label>
+                        <input class="form-check-input" type="checkbox" id="include-finished-orders-checkbox" name="include-finished-orders-checkbox" {% if session.get('include_finished_orders', False) %}checked{% endif %}>
+                    </div>
+                </form>
+            </div>
+
             <table class="table">
                 <thead>
                     <tr>

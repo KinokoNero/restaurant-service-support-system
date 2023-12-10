@@ -17,7 +17,7 @@
                         <input type="submit" class="btn btn-link" value="Wyloguj">
                     </form>
                     <a class="nav-link" href="/orders-manager">Manager zamówień</a>
-                    <a class="nav-link" href="/service-request-manager">Manager próśb</a>
+                    <a class="nav-link" href="/service-requests-manager">Manager próśb</a>
                     <a class="nav-link" href="/table-manager">Manager stolików</a>
                     <a class="nav-link" href="/db/add-item">Dodaj danie</a>
                 </div>
@@ -51,9 +51,7 @@
                                 <form method="GET" action="{{ url_for('db_routes.modify_item', item_id=item.id) }}">
                                     <button type="submit" class="btn btn-warning" onclick="saveScrollPosition()">Edytuj</button>
                                 </form>
-                            </div>
-                        <!--TODO: make these buttons next to each other-->
-                            <div class="mt-3">
+                                <!--TODO: make these buttons next to each other-->
                                 <form method="POST" action="{{ url_for('db_routes.delete_item', item_id=item.id) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć to danie?');">
                                     <button type="submit" class="btn btn-danger" onclick="saveScrollPosition()">Usuń</button>
                                 </form>
