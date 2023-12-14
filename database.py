@@ -1,3 +1,5 @@
+import os
+
 from bson import ObjectId
 from flask import Blueprint, request, render_template, flash, redirect, url_for, make_response
 from flask_login import login_required
@@ -11,8 +13,8 @@ from qr import generate_qr_code
 db_routes = Blueprint('db_routes', __name__, template_folder='templates')
 
 # MongoDB configuration
-mongodb_connection_uri = 'mongodb://localhost:27017/r3s'
-client = MongoClient(mongodb_connection_uri)
+
+client = MongoClient(os.environ.get('MONGODB_CONNECTION_URI'))
 db = client['r3s']
 users_collection = db['users']
 menu_collection = db['menu']
