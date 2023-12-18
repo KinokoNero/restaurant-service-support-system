@@ -1,14 +1,14 @@
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 from flask_login import login_required
 from flask_session import Session
 
 from authentication import auth_routes, login_manager, role_required
 from classes import Role, ServiceRequestType, service_request_type_display_strings, Status, status_display_strings
 from database import db_routes, get_menu, get_tables, get_orders, get_service_requests, client
-from notifications import notifications_routes
-from session import session_routes, get_current_user_order_info, get_include_finished_orders, get_include_finished_service_requests
+from session import session_routes, get_current_user_order_info, get_include_finished_orders, \
+    get_include_finished_service_requests
 
 app = Flask(__name__, static_url_path='/static')
 app.config.from_pyfile('config.py')
@@ -18,7 +18,6 @@ app.secret_key = os.urandom(24)
 app.register_blueprint(auth_routes, url_prefix='/auth')
 app.register_blueprint(db_routes, url_prefix='/db')
 app.register_blueprint(session_routes, url_prefix='/session')
-app.register_blueprint(notifications_routes, url_prefix='/notifications')
 
 # Login manager setup
 login_manager.init_app(app)
@@ -29,6 +28,11 @@ SESSION_MONGODB = client
 
 # Global variables accessible in templates
 app.jinja_env.globals['Role'] = Role  # Role enum
+
+
+@app.route('/')
+def index():
+    return redirect(url_for('menu'))
 
 
 @app.route('/menu', methods=['GET'])
@@ -87,4 +91,4 @@ def service_requests_manager():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
