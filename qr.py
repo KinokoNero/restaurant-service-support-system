@@ -1,9 +1,6 @@
 from flask import url_for
 import qrcode
-import os
 from io import BytesIO
-
-qr_codes_directory = os.path.join(os.path.dirname(__file__), "qr-codes")
 
 
 def generate_qr_code(table_id):

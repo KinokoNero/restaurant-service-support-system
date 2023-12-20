@@ -1,39 +1,39 @@
 from pymongo import MongoClient
 from security import hash_password
-from qr import qr_codes_directory
 from gridfs import GridFS
-import os
 
-client = MongoClient("mongodb://localhost:27017/")
-db = client["r3s"]
+client = MongoClient('mongodb://localhost:27017/')
+db = client['r3s']
 fs = GridFS(db)
 
-# Database and disk QR code clearing
+# Database QR code clearing
 fs_files = fs.find()
 for fs_file in fs_files:
     fs.delete(fs_file._id)
 
-disk_files = os.listdir(qr_codes_directory)
-for filename in disk_files:
-    file_path = os.path.join(qr_codes_directory, filename)
-    try:
-        os.remove(file_path)
-    except Exception as e:
-        print(f"Error deleting file: {file_path}, {e}")
-
 # Database setup
-collections = ["menu", "orders", "users"]
+collections = ['menu', 'orders', 'requests', 'users']
 for collection in collections:
     db[collection].drop()
     if collection not in db.list_collection_names():
         db.create_collection(collection)
-        print(f"Collection '{collection}' created successfully.")
+        print(f'Kolekcja "{collection}" została utworzona pomyślnie.')
     else:
-        print(f"Collection '{collection}' already exists!")
+        print(f'Kolekcja "{collection}" już istnieje.')
+
 
 # Admin user setup
-admin_username = input("Podaj nazwę użytkownika do logowania administratora: ")
-admin_password = input("Podaj hasło do logowania administratora: ")
+def get_non_empty_input(prompt):
+    while True:
+        user_input = input(prompt)
+        if user_input.strip():
+            return user_input
+        else:
+            print('Wartość nie może być pusta!')
+
+
+admin_username = get_non_empty_input('Podaj nazwę użytkownika do logowania administratora: ')
+admin_password = get_non_empty_input('Podaj hasło do logowania administratora: ')
 hashed_password, salt = hash_password(admin_password)
 
 admin_document = {
@@ -43,8 +43,10 @@ admin_document = {
     'role': 'admin'
 }
 
-result = db["users"].insert_one(admin_document)
+result = db['users'].insert_one(admin_document)
 if result.acknowledged:
-    print('Admin user added successfully.', 'success')
+    print('Pomyślnie utworzono konto administratora.')
 else:
-    print('Failed to add admin user!', 'danger')
+    print('Nie udało się utworzyć konta administratora!')
+
+print('Inicjalizacja systemu zakończona pomyślnie!')
