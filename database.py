@@ -14,7 +14,7 @@ db_routes = Blueprint('db_routes', __name__, template_folder='templates')
 
 # MongoDB configuration
 
-client = MongoClient(os.environ.get('MONGODB_CONNECTION_URI'))
+client = MongoClient('mongodb://localhost:27017/r3s')
 db = client['r3s']
 users_collection = db['users']
 menu_collection = db['menu']
@@ -40,10 +40,12 @@ def add_item():
         name = request.form['name']
         description = request.form['description']
         price = request.form['price']
+        item = MenuItem(name=name, description=description, price=price)
         image = request.files['image']
-        image_id = fs.put(image, filename=image.filename)
+        if image and image.filename != '':
+            image_id = fs.put(image, filename=image.filename)
+            item.image_id = image_id
 
-        item = MenuItem(name, description, price, image_id)
         item_dict = item.to_dict()
 
         result = menu_collection.insert_one(item_dict)
@@ -64,13 +66,24 @@ def add_item():
 def modify_item(item_id):
     item_id = ObjectId(item_id)
     item_data = menu_collection.find_one({'_id': item_id})
+    menu_item = MenuItem.from_dict(item_data)
 
     if request.method == 'POST':
-        menu_item = MenuItem.from_dict(item_data)
-
         menu_item.name = request.form['name']
         menu_item.description = request.form['description']
         menu_item.price = request.form['price']
+
+        # Update image if selected in form
+        image = request.files['image-input']
+        print(image)
+        if image and image.filename != '':
+            if menu_item.image_id is not None:
+                old_image_id = ObjectId(item_data.get('image_id'))
+                fs.delete(old_image_id)
+                fs.put(image, filename=image.filename, _id=old_image_id)
+            else:
+                image_id = fs.put(image, filename=image.filename)
+                menu_item.image_id = image_id
 
         menu_item_dict = menu_item.to_dict()
         menu_item_dict.pop('_id')  # Remove id for update
@@ -79,17 +92,28 @@ def modify_item(item_id):
             '$set': menu_item_dict
         })
 
-        # Update image if selected in form
-        image = request.files['image']
-        if image and image.filename != '':
-            old_image_id = ObjectId(item_data.get('image_id'))
-            fs.delete(old_image_id)
-            fs.put(image, filename=image.filename, _id=old_image_id)
-
         flash('Danie zostało zmodyfikowane.', 'success')
+
         return redirect(url_for('menu'))
 
-    return render_template('modify_item_form.html', item=item_data)
+    return render_template('modify_item_form.html', item=menu_item)
+
+
+@db_routes.route('/delete-item-image/<item_id>', methods=['POST'])
+@login_required
+@role_required(Role.ADMIN)
+def delete_item_image(item_id):
+    item_id = ObjectId(item_id)
+    menu_item_dict = menu_collection.find_one({'_id': item_id})
+    menu_item = MenuItem.from_dict(menu_item_dict)
+
+    fs.delete(menu_item.image_id)
+
+    menu_collection.update_one({'_id': item_id}, {
+        '$unset': {'image_id': 1}
+    })
+
+    return redirect(url_for('menu'))
 
 
 @db_routes.route('/delete-item/<item_id>', methods=['POST'])

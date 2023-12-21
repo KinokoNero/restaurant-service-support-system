@@ -11,7 +11,6 @@ from session import session_routes, get_current_user_order_info, get_include_fin
     get_include_finished_service_requests
 
 app = Flask(__name__, static_url_path='/static')
-app.config.from_pyfile('config.py')
 app.secret_key = os.urandom(24)
 
 # Blueprints setup
@@ -23,8 +22,9 @@ app.register_blueprint(session_routes, url_prefix='/session')
 login_manager.init_app(app)
 
 # Session setup
+app.config['SESSION_TYPE'] = 'mongodb'
+app.config['SESSION_MONGODB'] = client
 Session(app)
-SESSION_MONGODB = client
 
 # Global variables accessible in templates
 app.jinja_env.globals['Role'] = Role  # Role enum
@@ -96,4 +96,4 @@ def service_requests_manager():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

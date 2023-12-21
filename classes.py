@@ -41,22 +41,25 @@ class User(UserMixin):
 
 
 class MenuItem:  # Represents a single menu item stored in database
-    def __init__(self, name, description, price, image_id, id=None):
+    def __init__(self, name, price, id=None, description=None, image_id=None):
         self.name = name
-        self.description = description
         self.price = price
-        self.image_id = image_id
         self.id = ObjectId(id)
+        self.description = description
+        self.image_id = image_id
 
     def to_dict(self):
         menu_item = {
             'name': self.name,
             'description': self.description,
-            'price': float(self.price),
-            'image_id': ObjectId(self.image_id),
+            'price': float(self.price)
         }
         if self.id is not None:
             menu_item['_id'] = ObjectId(self.id)
+        if self.description is not None:
+            menu_item['description'] = self.description
+        if self.image_id is not None:
+            menu_item['image_id'] = self.image_id
 
         return menu_item
 
@@ -64,10 +67,10 @@ class MenuItem:  # Represents a single menu item stored in database
     def from_dict(cls, menu_item_dict):
         return cls(
             name=menu_item_dict['name'],
-            description=menu_item_dict['description'],
             price=float(menu_item_dict['price']),
-            image_id=menu_item_dict['image_id'],
-            id=ObjectId(menu_item_dict.get('_id'))
+            id=ObjectId(menu_item_dict.get('_id')),
+            description=menu_item_dict.get('description'),
+            image_id=menu_item_dict.get('image_id')
         )
 
 

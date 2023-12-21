@@ -1,12 +1,12 @@
 from functools import wraps
 
+import bcrypt
 from bson import ObjectId
 from flask import Blueprint, request, render_template, redirect, url_for, flash, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from pymongo import MongoClient
 
-from classes import User
-from security import verify_password
+from classes import User, Role
 
 # Admin routes blueprint
 auth_routes = Blueprint('auth_routes', __name__, template_folder='templates')
@@ -19,6 +19,32 @@ users = db["users"]
 # Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.login_view = 'auth_routes.admin_login'
+
+
+def role_required(required_role):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated:
+                return login_manager.unauthorized()
+            if current_user.role != required_role:
+                abort(403)  # Forbidden
+            return f(*args, **kwargs)
+
+        return decorated_function
+
+    return decorator
+
+
+def hash_password(password):
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password, salt
+
+
+def verify_password(password, hashed_password, salt):
+    hashed_input_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_input_password == hashed_password
 
 
 @login_manager.user_loader
@@ -71,21 +97,6 @@ def logout():
     session = []
     flash('User logged out successfully!', 'success')
     return redirect(url_for('menu'))
-
-
-def role_required(required_role):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if not current_user.is_authenticated:
-                return login_manager.unauthorized()
-            if current_user.role != required_role:
-                abort(403)  # Forbidden
-            return f(*args, **kwargs)
-
-        return decorated_function
-
-    return decorator
 
 
 def get_current_user():

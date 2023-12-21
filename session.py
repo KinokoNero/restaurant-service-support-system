@@ -21,12 +21,7 @@ def add_to_order(item_id):
 
     session['order'].append(order_item_dict)
 
-    # Check the source of the request
-    source = request.args.get('source')
-    if source == 'current_user_order':
-        return redirect(url_for('current_user_order'))
-    else:
-        return redirect(url_for('menu'))
+    return redirect(url_for('menu'))
 
 
 @session_routes.route('/remove-from-order/<item_index>', methods=['POST'])
