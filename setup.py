@@ -1,6 +1,7 @@
 from pymongo import MongoClient
-from security import hash_password
 from gridfs import GridFS
+
+from authentication import hash_password
 
 client = MongoClient('mongodb://localhost:27017/')
 db = client['r3s']

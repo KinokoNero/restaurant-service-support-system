@@ -10,23 +10,29 @@ class Role(Enum):
 
 
 class User(UserMixin):
-    def __init__(self, name, role, id=None, qr_code_image_id=None):
+    def __init__(self, name, role, id=None, qr_code_image_id=None, password=None, salt=None):
         self.name = name
         if not isinstance(role, Role):
             raise ValueError("Argument 'role' of object User must be an instance of Role enum.")
         self.role = role
-        self.id = ObjectId(id)
-        self.qr_code_image_id = ObjectId(qr_code_image_id)
+        self.id = id
+        self.qr_code_image_id = qr_code_image_id
+        self.password = password
+        self.salt = salt
 
     def to_dict(self):
         user = {
             'name': self.name,
             'role': self.role.value
         }
-        if self.qr_code_image_id is not None:
+        if self.id is not None:
             user['_id'] = ObjectId(self.id)
         if self.qr_code_image_id is not None:
             user['qr_code_image_id'] = ObjectId(self.qr_code_image_id)
+        if self.password is not None:
+            user['password'] = self.password
+        if self.salt is not None:
+            user['salt'] = self.salt
 
         return user
 
@@ -35,8 +41,10 @@ class User(UserMixin):
         return cls(
             name=user_dict['name'],
             role=Role(user_dict['role']),
-            id=ObjectId(user_dict.get('_id')),
-            qr_code_image_id=ObjectId(user_dict.get('qr_code_image_id'))
+            id=user_dict.get('_id'),
+            qr_code_image_id=user_dict.get('qr_code_image_id'),
+            password=user_dict.get('password'),
+            salt=user_dict.get('salt')
         )
 
 
@@ -44,7 +52,7 @@ class MenuItem:  # Represents a single menu item stored in database
     def __init__(self, name, price, id=None, description=None, image_id=None):
         self.name = name
         self.price = price
-        self.id = ObjectId(id)
+        self.id = id
         self.description = description
         self.image_id = image_id
 
@@ -59,7 +67,7 @@ class MenuItem:  # Represents a single menu item stored in database
         if self.description is not None:
             menu_item['description'] = self.description
         if self.image_id is not None:
-            menu_item['image_id'] = self.image_id
+            menu_item['image_id'] = ObjectId(self.image_id)
 
         return menu_item
 
@@ -68,7 +76,7 @@ class MenuItem:  # Represents a single menu item stored in database
         return cls(
             name=menu_item_dict['name'],
             price=float(menu_item_dict['price']),
-            id=ObjectId(menu_item_dict.get('_id')),
+            id=menu_item_dict.get('_id'),
             description=menu_item_dict.get('description'),
             image_id=menu_item_dict.get('image_id')
         )
@@ -119,7 +127,7 @@ class Order:  # Represents the whole order for storage in database
             raise ValueError("Argument 'order_items' of Order class object must be a dictionary of OrderItem objects.")
         self.order_items = order_items
 
-        self.id = ObjectId(id)
+        self.id = id
 
         if not isinstance(status, Status):
             raise ValueError("Argument 'status' of Order class object must be an instance of Status enum.")
@@ -157,7 +165,7 @@ class Order:  # Represents the whole order for storage in database
             order_items=order_items,
             timestamp=order_dict['timestamp'],
             status=Status(order_dict['status']),
-            id=ObjectId(order_dict.get('_id'))
+            id=order_dict.get('_id')
         )
 
 
@@ -184,7 +192,7 @@ class ServiceRequest:
             raise ValueError("Argument 'request_type' of UserRequest class object must be an instance of ServiceRequestType enum.")
         self.request_type = request_type
 
-        self.id = ObjectId(id)
+        self.id = id
 
         if not isinstance(status, Status):
             raise ValueError("Argument 'status' of object UserRequest must be an instance of Status enum.")
@@ -214,5 +222,5 @@ class ServiceRequest:
             request_type=ServiceRequestType(service_request_dict['request_type']),
             custom_info=service_request_dict.get('custom_info'),
             status=Status(service_request_dict['status']),
-            id=ObjectId(service_request_dict.get('_id'))
+            id=service_request_dict.get('_id')
         )
