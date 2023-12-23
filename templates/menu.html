@@ -46,7 +46,7 @@
                         <p>{{ item.description }}</p>
                         <p>Cena: {{ item.price }} zł</p>
                         {% if item.image_id %}
-                            <img src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
+                            <img class="img-fluid" src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
                         {% endif %}
 
                         {% if current_user and current_user.role == Role.ADMIN %}
