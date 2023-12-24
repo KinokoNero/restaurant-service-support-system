@@ -47,8 +47,6 @@ def menu():
     return render_template('menu.html', items=items)
 
 
-# TODO: add a view for single menu item
-
 @app.route('/table-manager', methods=['GET'])
 @login_required
 @role_required(Role.ADMIN)
