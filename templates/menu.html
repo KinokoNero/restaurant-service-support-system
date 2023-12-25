@@ -1,73 +1,68 @@
-<!DOCTYPE html>
-<html lang="pl">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-        <script src="{{ url_for('static', filename='js/scroll_script.js') }}"></script>
-        <title>Menu</title>
-    </head>
-    <body>
-        <!-- Bootstrap Navbar for Admin -->
-        {% if current_user and current_user.role == Role.ADMIN %}
-            <nav class="navbar navbar-light bg-light">
-                <div class="container">
-                    <form method="POST" action="{{ url_for('auth_routes.logout') }}">
-                        <input type="submit" class="btn btn-link" value="Wyloguj">
+{% extends 'base.html' %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/scroll_script.js') }}"></script>
+{% endblock %}
+
+{% block title %}Menu{% endblock %}
+
+{% block nav_items %}
+    {% if current_user and current_user.role == Role.ADMIN %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('table_manager') }}">Manager stolików</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('orders_manager') }}">Manager zamówień</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('service_requests_manager') }}">Manager próśb</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('db_routes.add_item') }}">Dodaj danie</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth_routes.change_admin_credentials') }}">Zmień dane uwierzytelniające</a>
+        </li>
+    {% endif %}
+
+    {% if current_user and current_user.role == Role.USER %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('current_user_order') }}">Moje zamówienie</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('service_request') }}">Prośba do obsługi</a>
+        </li>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <ul class="list-group">
+        {% for item in items %}
+            <li class="list-group-item text-center">
+                <h2>{{ item.name }}</h2>
+                <p>{{ item.description }}</p>
+                <p>Cena: {{ item.price }} zł</p>
+                {% if item.image_id %}
+                    <img class="img-fluid" src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
+                {% endif %}
+
+                {% if current_user and current_user.role == Role.ADMIN %}
+                    <div class="mt-3">
+                        <form method="GET" action="{{ url_for('db_routes.modify_item', item_id=item.id) }}">
+                            <button type="submit" class="btn btn-warning" onclick="saveScrollPosition()">Edytuj</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('db_routes.delete_item', item_id=item.id) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć to danie?');">
+                            <button type="submit" class="btn btn-danger" onclick="saveScrollPosition()">Usuń</button>
+                        </form>
+                    </div>
+                {% endif %}
+
+                {% if current_user and current_user.role == Role.USER %}
+                    <form method="POST" action="{{ url_for('session_routes.add_to_order', item_id=item.id) }}">
+                        <input type="submit" class="btn btn-primary mt-3" value="Dodaj do zamówienia" onclick="saveScrollPosition()"/>
                     </form>
-                    <a class="nav-link" href="/orders-manager">Manager zamówień</a>
-                    <a class="nav-link" href="/service-requests-manager">Manager próśb</a>
-                    <a class="nav-link" href="/table-manager">Manager stolików</a>
-                    <a class="nav-link" href="/db/add-item">Dodaj danie</a>
-                    <a class="nav-link" href="/auth/change-admin-credentials">Zmień dane uwierzytelniające</a>
-                </div>
-            </nav>
-        {% endif %}
-
-        <!-- Bootstrap Navbar for User -->
-        {% if current_user and current_user.role == Role.USER %}
-            <nav class="navbar navbar-light bg-light">
-                <div class="container">
-                    <form method="POST" action="{{ url_for('auth_routes.logout') }}">
-                        <input type="submit" class="btn btn-link" value="Wyloguj">
-                    </form>
-                    <a class="nav-link" href="/current-user-order">Moje zamówienie</a>
-                    <a class="nav-link" href="/service-request">Wyślij prośbę do obsługi</a>
-                </div>
-            </nav>
-        {% endif %}
-
-        <div class="container mt-4">
-            <ul class="list-group">
-                {% for item in items %}
-                    <li class="list-group-item text-center">
-                        <h2>{{ item.name }}</h2>
-                        <p>{{ item.description }}</p>
-                        <p>Cena: {{ item.price }} zł</p>
-                        {% if item.image_id %}
-                            <img class="img-fluid" src="{{ url_for('db_routes.get_image', image_id=item.image_id) }}">
-                        {% endif %}
-
-                        {% if current_user and current_user.role == Role.ADMIN %}
-                            <div class="mt-3">
-                                <form method="GET" action="{{ url_for('db_routes.modify_item', item_id=item.id) }}">
-                                    <button type="submit" class="btn btn-warning" onclick="saveScrollPosition()">Edytuj</button>
-                                </form>
-                                <form method="POST" action="{{ url_for('db_routes.delete_item', item_id=item.id) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć to danie?');">
-                                    <button type="submit" class="btn btn-danger" onclick="saveScrollPosition()">Usuń</button>
-                                </form>
-                            </div>
-                        {% endif %}
-
-                        {% if current_user and current_user.role == Role.USER %}
-                            <form method="POST" action="{{ url_for('session_routes.add_to_order', item_id=item.id) }}">
-                                <input type="submit" class="btn btn-primary mt-3" value="Dodaj do zamówienia" onclick="saveScrollPosition()"/>
-                            </form>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </body>
-</html>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
