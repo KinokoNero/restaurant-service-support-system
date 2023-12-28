@@ -1,7 +1,7 @@
 from functools import wraps
 
 import bcrypt
-from bson import ObjectId, Binary
+from bson import ObjectId
 from flask import Blueprint, request, render_template, redirect, url_for, flash, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from pymongo import MongoClient
@@ -118,11 +118,12 @@ def change_admin_credentials():
             })
             if result.acknowledged:
                 flash('Pomyślnie zmieniono dane uwierzytelniające.')
+                return redirect(url_for('menu'))
             else:
-                flash('Nie udało się zmienić danych uwierzytelniających!')
+                flash('Nie udało się zaktualizować danych uwierzytelniających w bazie!')
         else:
             flash('Niepoprawne dane uwierzytelniające!')
-        return redirect(url_for('menu'))
+        return redirect(url_for('change_admin_credentials'))
 
     return render_template('change_admin_credentials_form.html')
 
