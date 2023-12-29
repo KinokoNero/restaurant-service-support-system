@@ -70,7 +70,7 @@ def admin_login():
         if user:
             login_user(user)
         else:
-            flash('Nie udało się zalogować!', 'danger')
+            flash('Nie udało się zalogować!', 'error')
         return redirect(url_for('menu'))
     else:
         return render_template('admin_login.html')
@@ -86,7 +86,7 @@ def qr_login():
         login_user(user)
         return redirect(url_for('menu'))
     else:
-        flash('Nie udało się zalogować!', 'danger')
+        flash('Nie udało się zalogować!', 'error')
 
     return redirect(url_for('menu'))
 
@@ -117,12 +117,12 @@ def change_admin_credentials():
                 '$set': user_dict
             })
             if result.acknowledged:
-                flash('Pomyślnie zmieniono dane uwierzytelniające.')
+                flash('Pomyślnie zmieniono dane uwierzytelniające.', 'success')
                 return redirect(url_for('menu'))
             else:
-                flash('Nie udało się zaktualizować danych uwierzytelniających w bazie!')
+                flash('Nie udało się zaktualizować danych uwierzytelniających w bazie!', 'error')
         else:
-            flash('Niepoprawne dane uwierzytelniające!')
+            flash('Niepoprawne dane uwierzytelniające!', 'error')
         return redirect(url_for('change_admin_credentials'))
 
     return render_template('change_admin_credentials_form.html')

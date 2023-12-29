@@ -53,7 +53,7 @@ def add_item():
         if result.acknowledged:
             flash('Nowe danie zostało dodane do bazy.', 'success')
         else:
-            flash('Nie udało się dodać nowego dania do bazy.', 'danger')
+            flash('Nie udało się dodać nowego dania do bazy.', 'error')
 
         return redirect(url_for('menu'))
     else:
@@ -131,9 +131,9 @@ def delete_item(item_id):
             fs.delete(image_id)
             flash('Danie zostało usunięte.', 'success')
         else:
-            flash('Nie udało się usunąć dania.', 'danger')
+            flash('Nie udało się usunąć dania.', 'error')
     else:
-        flash('Nie znaleziono dania.', 'danger')
+        flash('Nie znaleziono dania.', 'error')
 
     return redirect(url_for('menu'))
 
@@ -160,9 +160,9 @@ def add_table():
                 {'$set': {'qr_code_image_id': qr_code_image_id}}
             )
 
-            flash('Stół został dodany.', 'success')
+            flash('Stolik został dodany.', 'success')
         else:
-            flash('Nie udało się dodać stołu.', 'danger')
+            flash('Nie udało się dodać stolika.', 'error')
 
         return redirect(url_for('table_manager'))
     else:
@@ -205,9 +205,9 @@ def delete_table(table_id):
             fs.delete(qr_code_image_id)
             flash('Stół został usunięty.', 'success')
         else:
-            flash('Nie udało się usunąć stołu.', 'danger')
+            flash('Nie udało się usunąć stołu.', 'error')
     else:
-        flash('Nie znaleziono stołu.', 'danger')
+        flash('Nie znaleziono stołu.', 'error')
 
     return redirect(url_for('table_manager'))
 
@@ -245,9 +245,9 @@ def delete_order(order_id):
         if result.deleted_count > 0:
             flash('Zamówienie zostało usunięte.', 'success')
         else:
-            flash('Nie udało się usunąć zamówienia.', 'danger')
+            flash('Nie udało się usunąć zamówienia.', 'error')
     else:
-        flash('Nie znaleziono zamówienia.', 'danger')
+        flash('Nie znaleziono zamówienia.', 'error')
 
     return redirect(url_for('orders_manager'))
 
@@ -285,9 +285,9 @@ def delete_service_request(service_request_id):
         if result.deleted_count > 0:
             flash('Prośba została usunięta.', 'success')
         else:
-            flash('Nie udało się usunąć prośby.', 'danger')
+            flash('Nie udało się usunąć prośby.', 'error')
     else:
-        flash('Nie znaleziono prośby.', 'danger')
+        flash('Nie znaleziono prośby.', 'error')
 
     return redirect(url_for('service_requests_manager'))
 
@@ -367,6 +367,6 @@ def insert_service_request(service_request):
     service_request_dict = service_request.to_dict()
     result = requests_collection.insert_one(service_request_dict)
     if result.acknowledged:
-        flash('Prośba została wysłana do obsługi.')
+        flash('Prośba została wysłana do obsługi.', 'success')
     else:
-        flash('Nie udało się wysłać prośby do obsługi.')
+        flash('Nie udało się wysłać prośby do obsługi.', 'error')
