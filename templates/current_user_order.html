@@ -30,8 +30,8 @@
                     <td>{{ order_item.menu_item.name }}</td>
                     <td>{{ "{:.2f}".format(order_item.menu_item.price) }}</td>
                     <td>
-                        <form class="order-info-form item-count-form" method="POST" action="{{ url_for('session_routes.update_order_item', item_index=loop.index0) }}">
-                            <input type="number" class="form-control item-count" name="item-count" value="{{ order_item.count }}" step="1" min="1"/> <!--TODO: resize this input for mobile devices-->
+                        <form class="item-count-form" method="POST" action="{{ url_for('session_routes.update_order_item', item_index=loop.index0) }}">
+                            <input type="text" inputmode="numeric" class="form-control item-count" name="item-count" value="{{ order_item.count }}"/>
                         </form>
                     </td>
                     <td>

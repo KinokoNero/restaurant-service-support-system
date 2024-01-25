@@ -91,11 +91,17 @@ class OrderItem:  # Represents a single order item stored in session
         self.additional_info = additional_info
 
     def to_dict(self):
-        return {
+        order_item_dict = {
             'menu_item': self.menu_item.to_dict(),
-            'count': int(self.count),
             'additional_info': str(self.additional_info)
         }
+
+        try:
+            order_item_dict['count'] = int(self.count)
+        except ValueError:
+            order_item_dict['count'] = 1
+
+        return order_item_dict
 
     @classmethod
     def from_dict(cls, order_item_dict):

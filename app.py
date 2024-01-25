@@ -30,11 +30,6 @@ Session(app)
 app.jinja_env.globals['Role'] = Role  # Role enum
 
 
-@app.route('/test')
-def test():
-    return render_template('notifications.html')
-
-
 @app.route('/')
 def index():
     return redirect(url_for('menu'))

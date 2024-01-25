@@ -79,7 +79,7 @@ def get_current_user_order_info():
 @session_routes.route('/place-order', methods=['POST'])
 @login_required
 @role_required(Role.USER)
-def place_order():  # TODO: collapse multiple separate identical menu items into a single one with approporiate count value
+def place_order():
     if 'order' in session:
         order_list = session['order']
         order_items = []
